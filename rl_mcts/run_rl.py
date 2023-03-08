@@ -4,7 +4,7 @@ import utils_rl
 import numpy as np
 import abs_sim
 
-from config import n_agents, n_requests, default_layout, env, verbose, goal_coords, shelf_coords
+from config_rl import n_agents, n_requests, default_layout, env, verbose, goal_coords, shelf_coords
 
 if __name__ == "__main__":
 

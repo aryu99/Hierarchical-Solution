@@ -2,7 +2,7 @@ from enum import Enum
 import gym
 
 import sys
-sys.path.append('../robotic_warehouse/')
+sys.path.append('../../robotic_warehouse/')
 
 import rware
 import glue_rl

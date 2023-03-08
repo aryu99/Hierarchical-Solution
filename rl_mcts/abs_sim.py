@@ -3,6 +3,7 @@ from enum import Enum
 
 from config_rl import n_agents, n_requests, default_layout, verbose, goal_coords, shelf_coords, Actions
 from entities_rl import Agent, Shelf
+import utils_rl
 # from config import verbose
 
 class AbstractSimulator:
@@ -35,13 +36,13 @@ class AbstractSimulator:
         state = []
 
         for i in range(len(self.obs)):
-            state = state.append(Agent(i, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0))
+            state = state.append(Agent(i+1, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0))
 
         for i in range(len(self.shelfs)):
             if (self.shelfs[i].x, self.shelfs[i].y) in self.req_shelfs:
-                state = state.append(Shelf(i, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
+                state = state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
             else:
-                state = state.append(Shelf(i, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
+                state = state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
 
         if verbose:
             print("Getting the current state")
@@ -61,28 +62,36 @@ class AbstractSimulator:
         '''
         Returns the possible actions of the simulation
         '''
-        agent_states, shelf_states = self.state_vector_parser(self.state, verbose=verbose)[0], self.state_vector_parser(self.state, verbose=verbose)[1]
+        agent_states, shelf_states = utils_rl.state_vector_parser(self.state, verbose=verbose)[0], utils_rl.state_vector_parser(self.state, verbose=verbose)[1]
         possible_actions = {}
         for agent in range(len(agent_states)):
             action_list = []
+
             if agent_states[agent][3] == 0:
                 for shelf in range(len(shelf_states)):
                     if shelf.req == 1 and shelf.pos == 0:
                         action_list.append([Actions.LOAD_FROM_SHELF, shelf.id])                     
                 possible_actions[agent] = action_list
                 continue
+            
+            # if agent_states[agent][3] == 0:
+            #     for shelf in range(len(shelf_states)):
+            #         if shelf.req == 1 and shelf.pos != 0:
+            #             action_list.append([Actions.DO_NOTHING])                     
+            #     possible_actions[agent] = action_list
+            #     continue
 
             elif agent_states[agent][3] != 0 and agent_states[agent][4] == 1:
-                action_list.append(Actions.GOTO_GOAL)
+                action_list.append([Actions.GOTO_GOAL])
                 for shelf in range(len(shelf_states)):
-                    if shelf.pos == 1:
+                    if shelf.pos != 0:
                         action_list.append([Actions.UNLOAD_TO_SHELF, shelf.id])
                 possible_actions[agent] = action_list
                 continue
 
             elif agent_states[agent][3] != 0 and agent_states[agent][4] == 0:
                 for shelf in range(len(shelf_states)):
-                    if shelf.pos == 1:
+                    if shelf.pos != 0:
                         action_list.append([Actions.UNLOAD_TO_SHELF, shelf.id])
                 possible_actions[agent] = action_list
                 continue
@@ -93,13 +102,13 @@ class AbstractSimulator:
         return possible_actions
                 
             
-    def execute_action(self, action, verbose=verbose) -> np.array:
+    def execute_action(self, actions, verbose=verbose) -> np.array:
         '''
-        Executes the action in the simulation
+        Executes the action in the simulation. Also figures out which agent completes action first
 
         Parameters
         ----------
-        action : int
+        action : Dict
             The action to be executed
 
         Returns
@@ -108,12 +117,42 @@ class AbstractSimulator:
             The new state of the simulation
         '''
         if verbose:
-            print("\n Executing action {} \n".format(action))
+            print("\n Executing action {} \n".format(actions))
+
+        store_num_steps = {}
+
+        agents, shelfs = utils_rl.state_vector_parser(self.state, verbose=verbose)
+
+        for key, value in actions.items():
+            if len(value) == 1: # Action: GOTO_GOAL
+                assert key.shelf != 0
+                assert key.flag == 1
+                store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
+                for agent in agents:
+                    if agent.id == key.id:
+                        agent.x, agent.y = goal_coords[1]
+
+
+
+
+            if value[0] == Actions.LOAD_FROM_SHELF:
+                self.state[key][3] = 1
+                self.state[value[1]][2] = 0
+                self.state[value[1]][3] = 1
+            elif value[0] == Actions.UNLOAD_TO_SHELF:
+                self.state[key][3] = 0
+                self.state[key][4] = 1
+                self.state[value[1]][2] = 1
+                self.state[value[1]][3] = 0
+            elif value[0] == Actions.GOTO_GOAL:
+                self.state[key][4] = 0
+
 
     @staticmethod
     def check_terminal_state(state, verbose=verbose) -> bool:
         '''
-        Checks whether the current state is a terminal state
+        Checks whether the current state is a terminal state. Does so by checking if 
+        the requested number of shelfs is n_req - 1 by going through all shelfs.
 
         Parameters
         ----------
@@ -134,33 +173,4 @@ class AbstractSimulator:
                     return True
         
         return False
-    
-    @staticmethod
-    def state_vector_parser(state, verbose=verbose) -> list:
-        '''
-        Parses the state vector into a list of agent states and a list of shelf states
 
-        Parameters
-        ----------
-        state : np.array
-            The current state of the simulation
-
-        Returns
-        -------
-        agent_states : list
-            The list of agent states
-        shelf_states : list
-            The list of shelf states
-        '''
-        if verbose:
-            print("\n Parsing the state vector into a list of agent states and a list of shelf states \n")
-
-        agent_states, shelf_states = [], []
-
-        for i in range(n_agents):
-            agent_states.append(i)
-        
-        for i in range(n_agents, len(state)):
-            shelf_states.append(i)
-
-        return agent_states, shelf_states
