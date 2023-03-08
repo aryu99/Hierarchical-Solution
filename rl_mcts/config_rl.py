@@ -18,13 +18,9 @@ class Actions(Enum):
     '''
     Enum for the actions
     '''
-    LOAD_FROM_SHELF_0 = 0
-    LOAD_FROM_SHELF_1 = 1
-    LOAD_FROM_SHELF_2 = 2
-    UNLOAD_TO_SHELF_0 = 3
-    UNLOAD_TO_SHELF_1 = 4
-    UNLOAD_TO_SHELF_2 = 5
-    GOTO_GOAL = 6
+    LOAD_FROM_SHELF = 0
+    UNLOAD_TO_SHELF = 1
+    GOTO_GOAL = 2
     
 
 n_agents = 2

@@ -19,6 +19,8 @@ class Agent:
         self.y = y
         self.shelf = shelf
         self.flag = flag
+        if self.shelf == 0:
+            assert self.flag == 0
 
     def __str__(self):
         return "Agent {}: ({}, {})".format(self.id, self.x, self.y)

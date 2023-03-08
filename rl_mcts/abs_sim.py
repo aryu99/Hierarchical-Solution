@@ -1,7 +1,8 @@
 import numpy as np
 from enum import Enum
 
-from config import n_agents, n_requests, default_layout, verbose, goal_coords, shelf_coords, Actions
+from config_rl import n_agents, n_requests, default_layout, verbose, goal_coords, shelf_coords, Actions
+from entities_rl import Agent, Shelf
 # from config import verbose
 
 class AbstractSimulator:
@@ -31,24 +32,16 @@ class AbstractSimulator:
         Returns the current state of the simulation as a vector
         '''
 
-        state = np.array([])
+        state = []
 
         for i in range(len(self.obs)):
-            agent_properties = np.array([i])
-            for j in range(3):
-                agent_properties = np.append(agent_properties, self.obs[i][j])
-            state = np.append(state, agent_properties)  
+            state = state.append(Agent(i, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0))
 
         for i in range(len(self.shelfs)):
-            shelf_properties = np.array([i])
-            shelf_properties = np.append(shelf_properties, self.shelfs[i].x)
-            shelf_properties = np.append(shelf_properties, self.shelfs[i].y)
             if (self.shelfs[i].x, self.shelfs[i].y) in self.req_shelfs:
-                shelf_properties = np.append(shelf_properties, 1)
+                state = state.append(Shelf(i, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
             else:
-                shelf_properties = np.append(shelf_properties, 0)
-
-            state = np.append(state, shelf_properties)
+                state = state.append(Shelf(i, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
 
         if verbose:
             print("Getting the current state")
@@ -64,15 +57,58 @@ class AbstractSimulator:
     def reset_state(self, state):
         self.state = state
 
-    def get_possible_actions(self, verbose=verbose) -> list:
+    def get_actions(self, verbose=verbose) -> list:
         '''
         Returns the possible actions of the simulation
         '''
-        agent_states, shelf_states = self.state_vector_parser(self.state, verbose=verbose)
-        possible_actions = []
+        agent_states, shelf_states = self.state_vector_parser(self.state, verbose=verbose)[0], self.state_vector_parser(self.state, verbose=verbose)[1]
+        possible_actions = {}
         for agent in range(len(agent_states)):
-            if agent_states[agent][2] == 0:
-                possible_actions.append(Actions.PICKUP)
+            action_list = []
+            if agent_states[agent][3] == 0:
+                for shelf in range(len(shelf_states)):
+                    if shelf.req == 1 and shelf.pos == 0:
+                        action_list.append([Actions.LOAD_FROM_SHELF, shelf.id])                     
+                possible_actions[agent] = action_list
+                continue
+
+            elif agent_states[agent][3] != 0 and agent_states[agent][4] == 1:
+                action_list.append(Actions.GOTO_GOAL)
+                for shelf in range(len(shelf_states)):
+                    if shelf.pos == 1:
+                        action_list.append([Actions.UNLOAD_TO_SHELF, shelf.id])
+                possible_actions[agent] = action_list
+                continue
+
+            elif agent_states[agent][3] != 0 and agent_states[agent][4] == 0:
+                for shelf in range(len(shelf_states)):
+                    if shelf.pos == 1:
+                        action_list.append([Actions.UNLOAD_TO_SHELF, shelf.id])
+                possible_actions[agent] = action_list
+                continue
+
+        if verbose:
+            print("\n Possible actions: ", possible_actions)
+        
+        return possible_actions
+                
+            
+    def execute_action(self, action, verbose=verbose) -> np.array:
+        '''
+        Executes the action in the simulation
+
+        Parameters
+        ----------
+        action : int
+            The action to be executed
+
+        Returns
+        -------
+        np.array
+            The new state of the simulation
+        '''
+        if verbose:
+            print("\n Executing action {} \n".format(action))
 
     @staticmethod
     def check_terminal_state(state, verbose=verbose) -> bool:
@@ -119,16 +155,12 @@ class AbstractSimulator:
         if verbose:
             print("\n Parsing the state vector into a list of agent states and a list of shelf states \n")
 
-        agent_states = np.zeros(shape=(n_agents, 3))
-        shelf_states = np.zeros(shape=(int((len(state)-3*n_agents)/2), 3))
+        agent_states, shelf_states = [], []
 
-        counter = 0
-        for i in range(0, 3*n_agents, 3):
-            agent_states[counter] = np.array(state[i:i+3])
-            counter += 1
+        for i in range(n_agents):
+            agent_states.append(i)
         
-        counter = 0
-        for i in range(3*n_agents, len(state), 3):
-            shelf_states[counter] = np.array(state[i:i+3])
+        for i in range(n_agents, len(state)):
+            shelf_states.append(i)
 
         return agent_states, shelf_states
