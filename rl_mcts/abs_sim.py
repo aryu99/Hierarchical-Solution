@@ -61,6 +61,8 @@ class AbstractSimulator:
     def get_actions(self, verbose=verbose) -> list:
         '''
         Returns the possible actions of the simulation
+
+        TODO: Add a continue action for agent whose action execution is in progress
         '''
         agent_states, shelf_states = utils_rl.state_vector_parser(self.state, verbose=verbose)[0], utils_rl.state_vector_parser(self.state, verbose=verbose)[1]
         possible_actions = {}
@@ -115,6 +117,8 @@ class AbstractSimulator:
         -------
         np.array
             The new state of the simulation
+
+        TODO: Add a continue action for agent whose action execution is in progress
         '''
         if verbose:
             print("\n Executing action {} \n".format(actions))
@@ -125,27 +129,19 @@ class AbstractSimulator:
 
         for key, value in actions.items():
             if len(value) == 1: # Action: GOTO_GOAL
-                assert key.shelf != 0
-                assert key.flag == 1
+                assert key.shelf != 0, "For Action: GOTO_GOAL, the agent should have a shelf"
+                assert key.flag == 1, "For Action: GOTO_GOAL, the agent should have a shelf that has content requested"
                 store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
                 for agent in agents:
                     if agent.id == key.id:
                         agent.x, agent.y = goal_coords[1]
-
-
-
-
-            if value[0] == Actions.LOAD_FROM_SHELF:
-                self.state[key][3] = 1
-                self.state[value[1]][2] = 0
-                self.state[value[1]][3] = 1
-            elif value[0] == Actions.UNLOAD_TO_SHELF:
-                self.state[key][3] = 0
-                self.state[key][4] = 1
-                self.state[value[1]][2] = 1
-                self.state[value[1]][3] = 0
-            elif value[0] == Actions.GOTO_GOAL:
-                self.state[key][4] = 0
+                        agent.flag = 0
+                        for shelf in shelfs:
+                            if shelf.id == key.shelf:
+                                shelf.req = 0
+            
+            elif value == [Actions.LOAD_FROM_SHELF]:
+                assert key.shelf == 0, "For Action: LOAD_FROM_SHELF, the agent should not have a shelf"
 
 
     @staticmethod

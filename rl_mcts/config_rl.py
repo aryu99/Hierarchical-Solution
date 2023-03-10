@@ -21,6 +21,7 @@ class Actions(Enum):
     LOAD_FROM_SHELF = 0
     UNLOAD_TO_SHELF = 1
     GOTO_GOAL = 2
+    # DO_NOTHING = 3
     
 
 n_agents = 2

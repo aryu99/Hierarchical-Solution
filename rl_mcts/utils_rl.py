@@ -56,7 +56,7 @@ def num_steps(state, agent, action:list, verbose=verbose):
     '''
 
     agent_pos = (agent.x, agent.y)
-    shelfs = 
+    agents, shelfs = state_vector_parser(state, verbose=verbose)[0], state_vector_parser(state, verbose=verbose)[1] 
 
     if len(action) == 1: # For GOTO GOAL
         goal_pos = goal_coords[1]
@@ -64,7 +64,13 @@ def num_steps(state, agent, action:list, verbose=verbose):
         return num_steps
     
     else:
-        if action[0] == Actions.LOAD_FROM_SHELF:
+        if action[0] == Actions.LOAD_FROM_SHELF or action[0] == Actions.UNLOAD_TO_SHELF:
+            for shelf in shelfs:
+                if shelf.id == action[1]:
+                    shelf_pos = (shelf.x, shelf.y)
+                    num_steps = (abs(agent_pos[0] - shelf_pos[0]) + abs(agent_pos[1] - shelf_pos[1])) + 1
+                    return num_steps
+
 
 
 
