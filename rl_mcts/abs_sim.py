@@ -1,5 +1,6 @@
 import numpy as np
 from enum import Enum
+import copy
 
 from config_rl import n_agents, n_requests, default_layout, verbose, goal_coords, shelf_coords, Actions
 from entities_rl import Agent, Shelf
@@ -30,7 +31,7 @@ class AbstractSimulator:
 
     def init_vector_state(self, verbose=verbose) -> np.array:
         '''
-        Returns the current state of the simulation as a vector
+        Returns the current state of the simulation as a vector of Agent and Shelf objects
         '''
 
         state = []
@@ -69,32 +70,46 @@ class AbstractSimulator:
         for agent in range(len(agent_states)):
             action_list = []
 
-            if agent_states[agent][3] == 0:
+            if agent_states[agent].action != None: # Action: CONTINUE
+                action_list.append([Actions.CONTINUE])
+                possible_actions[agent] = action_list
+                continue
+
+            elif agent_states[agent].shelf == 0: # Action: LOAD_SHELF
                 for shelf in range(len(shelf_states)):
                     if shelf.req == 1 and shelf.pos == 0:
-                        action_list.append([Actions.LOAD_FROM_SHELF, shelf.id])                     
+                        action_list.append([Actions.LOAD_SHELF, shelf.id])                     
                 possible_actions[agent] = action_list
                 continue
-            
-            # if agent_states[agent][3] == 0:
-            #     for shelf in range(len(shelf_states)):
-            #         if shelf.req == 1 and shelf.pos != 0:
-            #             action_list.append([Actions.DO_NOTHING])                     
-            #     possible_actions[agent] = action_list
-            #     continue
 
-            elif agent_states[agent][3] != 0 and agent_states[agent][4] == 1:
+            elif agent_states[agent].shelf != 0 and agent_states[agent].flag == 1: # Action: GOTO_GOAL and UNLOAD_SHELF (For now can unload a req shelf)
                 action_list.append([Actions.GOTO_GOAL])
+                store_static_shelf_pos = []
+                for shelf in range(len(shelf_states)):
+                    if shelf.pos == 0:
+                        store_static_shelf_pos.append([shelf.x, shelf.y])
+                
                 for shelf in range(len(shelf_states)):
                     if shelf.pos != 0:
-                        action_list.append([Actions.UNLOAD_TO_SHELF, shelf.id])
+                        if shelf.unique_coord in store_static_shelf_pos:
+                            continue
+                        else:
+                            action_list.append([Actions.UNLOAD_SHELF, shelf.id])
                 possible_actions[agent] = action_list
                 continue
 
-            elif agent_states[agent][3] != 0 and agent_states[agent][4] == 0:
+            elif agent_states[agent].shelf != 0 and agent_states[agent].flag == 0: # Action: UNLOAD_SHELF
+                store_static_shelf_pos = []
+                for shelf in range(len(shelf_states)):
+                    if shelf.pos == 0:
+                        store_static_shelf_pos.append([shelf.x, shelf.y])
+                
                 for shelf in range(len(shelf_states)):
                     if shelf.pos != 0:
-                        action_list.append([Actions.UNLOAD_TO_SHELF, shelf.id])
+                        if shelf.unique_coord in store_static_shelf_pos:
+                            continue
+                        else:
+                            action_list.append([Actions.UNLOAD_SHELF, shelf.id])
                 possible_actions[agent] = action_list
                 continue
 
@@ -119,30 +134,91 @@ class AbstractSimulator:
             The new state of the simulation
 
         TODO: Add a continue action for agent whose action execution is in progress
+
+        Need to make two loops. First loop figures out the number of steps required for each agent to complete action. 
+        Second loop executes the action conditioned on the stored number of steps.
         '''
         if verbose:
             print("\n Executing action {} \n".format(actions))
 
         store_num_steps = {}
+        store_actions_steps = {}
 
         agents, shelfs = utils_rl.state_vector_parser(self.state, verbose=verbose)
 
+        # This loop figures out the number of steps required for each agent to complete action
         for key, value in actions.items():
-            if len(value) == 1: # Action: GOTO_GOAL
-                assert key.shelf != 0, "For Action: GOTO_GOAL, the agent should have a shelf"
-                assert key.flag == 1, "For Action: GOTO_GOAL, the agent should have a shelf that has content requested"
-                store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
+            for agent in agents:
+                if agent.id == key.id:
+                    store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
+                    store_actions_steps[key] = [value, store_num_steps[key]]
+
+        min_steps_val = min(store_num_steps.values())
+        
+
+        # This loop executes the action conditioned on the stored number of steps
+        for key, value in store_actions_steps.items():
+            if value[0] == [Actions.GOTO_GOAL]: # Action: GOTO_GOAL
                 for agent in agents:
                     if agent.id == key.id:
-                        agent.x, agent.y = goal_coords[1]
-                        agent.flag = 0
-                        for shelf in shelfs:
-                            if shelf.id == key.shelf:
-                                shelf.req = 0
-            
-            elif value == [Actions.LOAD_FROM_SHELF]:
-                assert key.shelf == 0, "For Action: LOAD_FROM_SHELF, the agent should not have a shelf"
+                        assert key.shelf != 0, "For Action: GOTO_GOAL, the agent should have a shelf"
+                        assert key.flag == 1, "For Action: GOTO_GOAL, the agent should have a shelf that has content requested"
+                        if value[1] == min_steps_val:
+                            agent.x, agent.y = goal_coords[0]
+                            agent.toggle_flag()
+                            for shelf in shelfs:
+                                if shelf.id == key.shelf:
+                                    shelf.req = 0
+                        else:
+                            available_steps = value[1] - min_steps_val
+                            agent.x, agent.y = utils_rl.get_next_coords(agent.x, agent.y, available_steps)    
+                    break
+                continue
 
+
+            elif value[0][0] == Actions.LOAD_SHELF: # Action: LOAD_SHELF
+                for agent in agents:
+                    if agent.id == key.id:
+                        assert key.shelf == 0, "For Action: LOAD_SHELF, the agent should not have a shelf"
+                        assert key.flag == 0, "For Action: LOAD_SHELF, as the agent does not have any shelf, the flag should be 0"
+                        
+                        for shelf in shelfs:
+                            if shelf.id == value[0][1]:
+                                # For simplification, we assume that the agent only picks up shelf that is requested 
+                                assert shelf.req == 1, "For Action: LOAD_SHELF, the shelf should be a requested shelf"
+                                assert shelf.pos == 0, "For Action: LOAD_SHELF, the shelf should be at a shelf position"
+                                if value[1] == min_steps_val:
+                                    agent.shelf = shelf.id
+                                    agent.flag = shelf.req
+                                    assert agent.flag == 1, "For Action: LOAD_SHELF, the flag should be 1 after the agent picks the shelf"
+                                    shelf.pos = copy.deepcopy(agent.id)
+                                    shelf.x, shelf.y = copy.deepcopy(agent.x), copy.deepcopy(agent.y)
+
+                                else:
+                                    available_steps = value[1] - min_steps_val
+                                    agent.x, agent.y = utils_rl.get_next_coords(agent.x, agent.y, available_steps, target=(shelf.x, shelf.y))
+                            break
+                    break
+                continue
+
+            elif value[0][0] == Actions.UNLOAD_SHELF: # Action: UNLOAD_SHELF (For now can unload a requested shelf also)
+                for agent in agents:
+                    if agent.id == key.id:
+                        assert key.shelf != 0, "For Action: UNLOAD_SHELF, the agent should have a shelf"
+                        
+                        for shelf in shelfs:
+                            if shelf.id == value[0][1]:
+                                if value[1] == min_steps_val:
+                                    agent.shelf = 0
+                                    agent.flag = 0
+                                    shelf.pos = 0
+                                    shelf.x, shelf.y = agent.x, agent.y
+                                else:
+                                    available_steps = value[1] - min_steps_val
+                                    agent.x, agent.y = utils_rl.get_next_coords(agent.x, agent.y, available_steps, target=(shelf.x, shelf.y))
+                            break
+                    break
+                continue
 
     @staticmethod
     def check_terminal_state(state, verbose=verbose) -> bool:
@@ -163,10 +239,15 @@ class AbstractSimulator:
         if verbose:
             print("\n Checking whether the current state is a terminal state \n")
 
-        for i in range(2, 3*n_agents, 3):
-            if state[i] == 1:
-                if (state[i-2], state[i-1]) in goal_coords:
-                    return True
-        
-        return False
+        agents, shelfs = utils_rl.state_vector_parser(state, verbose=verbose)
+
+        req_counter = 0
+        for shelf in shelfs:
+            if shelf.req == 1:
+                req_counter += 1
+
+        if req_counter < n_requests:
+            return True
+        else:
+            return False
 

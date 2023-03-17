@@ -13,7 +13,6 @@ class Agent:
             The id of the shelf the agent is carrying (0 if not carrying anything)
         flag : int
             Whether it is an empty shelf (0) or a full shelf (1)
-        TODO: Add an attribute to represent if the agent is currently executing an action
         action: None or Action
         '''
         self.id = id
@@ -23,6 +22,7 @@ class Agent:
         self.flag = flag
         if self.shelf == 0:
             assert self.flag == 0
+        self.action = None
 
     def __str__(self):
         return "Agent {}: ({}, {})".format(self.id, self.x, self.y)
@@ -40,16 +40,19 @@ class Shelf:
         ----------
         id : int
             The id of the shelf
+        unique_coord: tuple
+            The unique initial coordinates of the shelf
         x : int
-            The original x coordinate of the shelf (gets reset to the place where an agent drops it at)
+            The x coordinate of the shelf (gets reset to the place where an agent drops it at)
         y : int
-            The original y coordinate of the shelf
+            The y coordinate of the shelf
         req : int
             Whether it is a requested shelf (1) or not (0)
         pos : int
             Position of the shelf. 0 if it is not on an agent, otherwise the id of the agent it is on.
         '''
         self.id = id
+        self.unique_coord = (x, y)
         self.x = x
         self.y = y
         self.req = req

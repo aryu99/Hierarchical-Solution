@@ -10,6 +10,9 @@ import glue_rl
 class RewardFormat(Enum):
     '''
     Enum for the reward format
+
+    TERMINAL: Reward is given after seeng the state after a set number of rollout steps
+    INVERSE: Reward is inversely proportional to the number of rollout steps it takes to reach the terminal state
     '''
     TERMINAL = 0
     INVERSE = 1
@@ -18,9 +21,10 @@ class Actions(Enum):
     '''
     Enum for the actions
     '''
-    LOAD_FROM_SHELF = 0
-    UNLOAD_TO_SHELF = 1
+    LOAD_SHELF = 0
+    UNLOAD_SHELF = 1
     GOTO_GOAL = 2
+    CONTINUE = 3
     # DO_NOTHING = 3
     
 
