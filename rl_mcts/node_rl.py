@@ -1,4 +1,4 @@
-import utils_rl
+from glue_rl import check_terminal_state
 
 class Node:
     w_res = 1
@@ -61,7 +61,7 @@ class Node:
         -------
         True if the node is terminal, False otherwise (bool)
         '''
-        return utils_rl.check_terminal_state(node.state)
+        return check_terminal_state(node.state)
 
     @staticmethod
     def IsTerminal(level:int):

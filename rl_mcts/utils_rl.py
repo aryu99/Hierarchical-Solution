@@ -1,4 +1,4 @@
-from config_rl import verbose, goal_coords, Actions, n_agents
+from config_rl import verbose, goal_coords, Actions, n_agents, MCTS_REWARD_PARAMETER, RewardFormat
 
 def state_vector_parser(state, verbose=verbose) -> list:
     '''
@@ -123,6 +123,17 @@ def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords[1]):
         
     return agent_x, agent_y
 
+
+def calc_rollout_reward(state, reward_format=MCTS_REWARD_PARAMETER):
+
+    if reward_format == RewardFormat.TERMINAL:
+        assert len(state)==1
+        return 
+
+    elif reward_format == RewardFormat.INVERSE:
+        assert len(state)==2, "Input should be state vector and num of steps taken to reach the terminal state"
+
+        
 
 
 

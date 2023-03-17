@@ -56,10 +56,13 @@ class AbstractSimulator:
 
         return state
     
+    def get_current_state(self):
+        return self.state
+    
     def reset_state(self, state):
         self.state = state
 
-    def get_actions(self, verbose=verbose) -> list:
+    def get_actions(self, verbose=verbose) -> dict:
         '''
         Returns the possible actions of the simulation
 
