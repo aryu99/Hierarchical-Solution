@@ -1,9 +1,9 @@
 from glue_rl import check_terminal_state
 
 class Node:
-    w_res = 1
-    w_dist = 1
-    levelTerminal = 20
+    # w_res = 1
+    # w_dist = 1
+    levelTerminal = 5
 
     def __init__(self, state):
         self.state = state
@@ -64,7 +64,7 @@ class Node:
         return check_terminal_state(node.state)
 
     @staticmethod
-    def IsTerminal(level:int):
+    def IsLevelTerminal(level:int):
         '''
         This checks if the level is terminal during the simulation phase of the MCTS algorithm.
 

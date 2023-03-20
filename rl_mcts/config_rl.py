@@ -71,7 +71,7 @@ class RewardFormat(Enum):
     '''
     Enum for the reward format
 
-    TERMINAL: Reward is given after seeng the state after a set number of rollout steps
+    TERMINAL: Preset Reward is given after seeng the state after a set number of rollout steps
     INVERSE: Reward is inversely proportional to the number of rollout steps it takes to reach the terminal state
     '''
     TERMINAL = 0
