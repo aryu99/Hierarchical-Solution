@@ -25,7 +25,7 @@ class Agent:
         self.action = None
 
     def __str__(self):
-        return "Agent {}: ({}, {})".format(self.id, self.x, self.y)
+        return "Agent id: {} \n  current_pos: (x: {}, y: {}) \n  shelf: {} \n  flag: {} \n  action: {}".format(self.id, self.x, self.y, self.shelf, self.flag, self.action)
     
     def set_shelf(self, shelf):
         self.shelf = shelf
@@ -59,7 +59,7 @@ class Shelf:
         self.pos = pos
 
     def __str__(self):
-        return "Shelf {}: ({}, {})".format(self.id, self.x, self.y)
+        return "Shelf id {}: \n unique_coord: ({}) \n current_coord: (x: {}, y: {}) \n req: {} \n pos: {}".format(self.id, self.unique_coord, self.x, self.y, self.req, self.pos)
     
     def toggle_flag(self, flag):
         self.flag = flag

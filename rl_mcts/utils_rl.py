@@ -1,4 +1,5 @@
 import time
+import os
 
 from config_rl import verbose, goal_coords, Actions, n_agents, MCTS_REWARD_PARAMETER, RewardFormat
 
@@ -24,10 +25,10 @@ def state_vector_parser(state, verbose=verbose) -> list:
     agent_states, shelf_states = [], []
 
     for i in range(n_agents):
-        agent_states.append(i)
+        agent_states.append(state[i])
     
-    for i in range(n_agents, len(state)):
-        shelf_states.append(i)
+    for j in range(n_agents, len(state)):
+        shelf_states.append(state[j])
 
     return agent_states, shelf_states
 
@@ -136,19 +137,24 @@ def calc_rollout_reward(state, reward_format=MCTS_REWARD_PARAMETER):
         assert len(state)==2, "Input should be state vector and num of steps taken to reach the terminal state"
 
 
-def saveText(filename, text):
+def saveText(Text, name="final_result"):
     '''
-    Saves a text file with the given filename and text
-    
+    Saves the result of the game to a text file
+
     Parameters
     ----------
-    filename : str
-        The name of the file to be saved
-    text : str
-        The text to be saved in the file
+    Text : whatever you want to save, gets converted to string within this function (for example, result of the game)
+    name : String (name of the file)
     '''
-    with open(filename, 'w') as f:
-        f.write(text)
+    filename = name + ".txt"
+    if os.path.exists(filename):
+        append_write = 'a'  # append if already exists
+    else:
+        append_write = 'w'  # make a new file if not
+
+    f = open(filename, append_write)
+    f.write(str(Text) + '\n')
+    f.close()
 
 def timer():
     '''

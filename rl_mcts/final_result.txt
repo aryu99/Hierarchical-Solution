@@ -1,0 +1,2 @@
+
+ State: [<entities_rl.Agent object at 0x7feebf4600d0>, <entities_rl.Agent object at 0x7fee94961bb0>, <entities_rl.Shelf object at 0x7fee94961b80>, <entities_rl.Shelf object at 0x7fee94961c10>, <entities_rl.Shelf object at 0x7fee62cbb3d0>]

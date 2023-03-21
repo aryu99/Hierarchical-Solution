@@ -103,25 +103,27 @@ def EvalNextStates(CurrState):
     print("\n Evaluating the new states \n")
     State = copy.deepcopy(CurrState)
     
-    abstract_sim.reset(State)
+    abstract_sim.reset_state(State)
     Actions = abstract_sim.get_actions()
 
     # Get all possible combinations of actions for all vehicles
     storeActions = []    
     jointActionList = list(Actions.values())
     combinatonList = [p for p in itertools.product(*jointActionList)]
-    vehicleList = list(Actions.keys())    
+    AgentList = list(Actions.keys())    
+
     
     for i in range(len(combinatonList)):
         storeAction = {}
-        for j in range(len(vehicleList)):        
-            storeAction[vehicleList[j]] = combinatonList[i][j]
+        for j in range(len(AgentList)):        
+            storeAction[AgentList[j]] = combinatonList[i][j]
         storeActions.append(storeAction)
 
     # Get the next state for each combination of actions
     NextStates = []
+    print("ActionList",storeActions)
     for m in range(len(storeActions)):
-        abstract_sim.reset(State)        
+        abstract_sim.reset_state(State)        
         NextStates.append(abstract_sim.execute_action(storeActions[m])) 
 
     return NextStates

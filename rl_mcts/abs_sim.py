@@ -38,9 +38,14 @@ class AbstractSimulator:
 
         for i in range(len(self.obs)):
             state.append(Agent(i+1, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0))
+        # print("\n -----------\n printing requested shelfs: {} \n -----------\n".format(self.req_shelfs))
+
+        requested_shelf_coords = []
+        for req_shelf in self.req_shelfs:
+            requested_shelf_coords.append((req_shelf.x, req_shelf.y))
 
         for i in range(len(self.shelfs)):
-            if (self.shelfs[i].x, self.shelfs[i].y) in self.req_shelfs:
+            if (self.shelfs[i].x, self.shelfs[i].y) in requested_shelf_coords:
                 state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
             else:
                 state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
@@ -70,29 +75,32 @@ class AbstractSimulator:
         '''
         agent_states, shelf_states = utils_rl.state_vector_parser(self.state, verbose=verbose)[0], utils_rl.state_vector_parser(self.state, verbose=verbose)[1]
         possible_actions = {}
-        for agent in range(len(agent_states)):
+        for agent in agent_states:
             action_list = []
 
-            if agent_states[agent].action != None: # Action: CONTINUE
+            if agent.action != None: # Action: CONTINUE
                 action_list.append([Actions.CONTINUE])
                 possible_actions[agent] = action_list
                 continue
 
-            elif agent_states[agent].shelf == 0: # Action: LOAD_SHELF
-                for shelf in range(len(shelf_states)):
+            elif agent.shelf == 0: # Action: LOAD_SHELF
+                for shelf in shelf_states:
+                    for action in action_list:
+                        if action == [Actions.LOAD_SHELF, shelf.id]:
+                            continue
                     if shelf.req == 1 and shelf.pos == 0:
                         action_list.append([Actions.LOAD_SHELF, shelf.id])                     
                 possible_actions[agent] = action_list
                 continue
 
-            elif agent_states[agent].shelf != 0 and agent_states[agent].flag == 1: # Action: GOTO_GOAL and UNLOAD_SHELF (For now can unload a req shelf)
+            elif agent.shelf != 0 and agent.flag == 1: # Action: GOTO_GOAL and UNLOAD_SHELF (For now can only unload a req shelf)
                 action_list.append([Actions.GOTO_GOAL])
                 store_static_shelf_pos = []
-                for shelf in range(len(shelf_states)):
+                for shelf in shelf_states:
                     if shelf.pos == 0:
                         store_static_shelf_pos.append([shelf.x, shelf.y])
                 
-                for shelf in range(len(shelf_states)):
+                for shelf in shelf_states:
                     if shelf.pos != 0:
                         if shelf.unique_coord in store_static_shelf_pos:
                             continue
@@ -101,13 +109,13 @@ class AbstractSimulator:
                 possible_actions[agent] = action_list
                 continue
 
-            elif agent_states[agent].shelf != 0 and agent_states[agent].flag == 0: # Action: UNLOAD_SHELF
+            elif agent.shelf != 0 and agent.flag == 0: # Action: UNLOAD_SHELF
                 store_static_shelf_pos = []
-                for shelf in range(len(shelf_states)):
+                for shelf in shelf_states:
                     if shelf.pos == 0:
                         store_static_shelf_pos.append([shelf.x, shelf.y])
                 
-                for shelf in range(len(shelf_states)):
+                for shelf in shelf_states:
                     if shelf.pos != 0:
                         if shelf.unique_coord in store_static_shelf_pos:
                             continue
@@ -152,6 +160,7 @@ class AbstractSimulator:
         # This loop figures out the number of steps required for each agent to complete action
         for key, value in actions.items():
             for agent in agents:
+                print("\n Agent: {}, Key: {}".format(agent, key))
                 if agent.id == key.id:
                     store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
                     store_actions_steps[key] = [value, store_num_steps[key]]
@@ -241,7 +250,8 @@ class AbstractSimulator:
         '''
         if verbose:
             print("\n Checking whether the current state is a terminal state \n")
-
+            
+        # print("\n Current state: {} \n".format(state))
         agents, shelfs = utils_rl.state_vector_parser(state, verbose=verbose)
 
         req_counter = 0

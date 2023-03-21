@@ -15,6 +15,11 @@ class Node:
 
         self.val = 0.0
 
+    def __str__(self):
+        for i in range(len(self.state)):
+            print(self.state[i])
+        return "Node State length: {} \n Node Visits: {} \n Node SPUTC: {} \n Node Action: {} \n Node Value: {} \n".format(len(self.state), self.visits, self.sputc, self.action, self.val)
+
     def AppendChild(self, child):
         '''
         Appends a child to the node

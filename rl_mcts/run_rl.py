@@ -33,9 +33,9 @@ def run_MCTS():
     root_node.visits = 1
     print(root_state)
 
-    sol = MCTS_rl.MCTS(root_node)
+    sol = MCTS(root_node)
     time = utils_rl.timer()
-    sol.Run(MaxIteration, numActions, del_children=True, limit_del = True, clear_root=False, time_thresh=30)
+    sol.Run(MaxIteration, numActions, del_children=True, limit_del = True, clear_root=False)
     end_time = utils_rl.timer()
     print("Time taken: ", end_time - time)
     gameStates = sol.storeGameStates

@@ -487,12 +487,14 @@ class MCTS:
     #	Runs the SP-MCTS.
     # MaxIter	- Maximum iterations to run the search algorithm.
     #-----------------------------------------------------------------------#
-    def Run(self, MaxIteration=5, numActions=1, del_children=False, limit_del = True, clear_root = False, load = False, time_thresh = 1200):
+    def Run(self, MaxIteration=5, numActions=1, del_children=False, limit_del = True, clear_root = False, load = False):
         # This handles the case where the tree is not loaded from a file
         self.storeGameStates = [self.root.state]
         self.storeActions = []
         self.counter = 0
         self.MaxIter = MaxIteration
+
+        # print("\n checking if root {} is terminal :{}".format(self.root, nd.Node.IsNodeTerminal(self.root)))
 
         while (nd.Node.IsNodeTerminal(self.root) == False):
             for i in range(int(self.MaxIter)):
@@ -565,6 +567,6 @@ class MCTS:
         # Plot the results
         count = 0
         for i in self.storeGameStates:
-            utils_rl.saveText('\n State: {}'.format(i))
+            utils_rl.saveText('\n State: {}'.format(i), 'gameStates.txt')
             count += 1
             print("\n Action State {}: {}".format(count, i))
