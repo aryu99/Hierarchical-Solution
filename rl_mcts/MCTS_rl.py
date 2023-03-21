@@ -15,7 +15,7 @@ import pickle as pkl
 import node_rl as nd
 import glue_rl
 
-import utils
+import utils_rl
 
 #------------------------------------------------------------------------#
 # Class for Single Player Monte Carlo Tree Search implementation.
@@ -200,7 +200,8 @@ class MCTS:
         NextStates = glue_rl.EvalNextStates(Node.state)
         Children = []
         for State in NextStates:            
-            ChildNode = nd.Node(State)
+            ChildNode = nd.Node(State[0])
+            ChildNode.action = State[1]
             Children.append(ChildNode)
         return Children
 
@@ -489,80 +490,81 @@ class MCTS:
     def Run(self, MaxIteration=5, numActions=1, del_children=False, limit_del = True, clear_root = False, load = False, time_thresh = 1200):
         # This handles the case where the tree is not loaded from a file
         self.storeGameStates = [self.root.state]
+        self.storeActions = []
         self.counter = 0
         self.MaxIter = MaxIteration
-        for i in range(int(self.MaxIter)):
-            # Loop for each iteration for an action
-            print ("\n===== Begin iteration: {} for Action No. {} =====".format(i, self.counter))
-            if (self.verbose):
-                print ("\n===== Begin iteration:", i, "=====")
-            X = self.Selection()
 
-            Y = self.Expansion(X)
-            if (Y):
-                Result = self.Simulation(Y)
+        while (nd.Node.IsNodeTerminal(self.root) == False):
+            for i in range(int(self.MaxIter)):
+                # Loop for each iteration for an action
+                print ("\n===== Begin iteration: {} for Action No. {} =====".format(i, self.counter))
                 if (self.verbose):
-                    print ("Result: ", Result)
-                self.Backpropagation(Y, Result)
-                root = copy.deepcopy(self.root)
-                while root.children:
-                    level = 0
-                    child_idx = 0
-                    for child in root.children:
-                        child_idx += 1
-                    child_idx = 0
-                    level += 1
-                    root = child
-            
-            # This is if we reach terminal state
-            else:
-                Result = nd.Node.GetResult(utils.calcRes(X.state)["TOTAL"], utils.calcDistCost(X.state))
-                if (self.verbose):
-                    print ("Result: ", Result)
-                self.Backpropagation(X, Result)
+                    print ("\n===== Begin iteration:", i, "=====")
+                X = self.Selection()
 
-            curr_time = utils.timer()
-
-            # stop loop if time exceeds threshold
-            # if (curr_time - start_time) > self.action_timeThresh:
-            #     break   
+                Y = self.Expansion(X)
+                if (Y):
+                    Result = self.Simulation(Y)
+                    if (self.verbose):
+                        print ("Result: ", Result)
+                    self.Backpropagation(Y, Result)
+                    root = copy.deepcopy(self.root)
+                    while root.children:
+                        level = 0
+                        child_idx = 0
+                        for child in root.children:
+                            child_idx += 1
+                        child_idx = 0
+                        level += 1
+                        root = child
                 
-        #     self.PrintResult(Result)
-        # self.PrintTree()
-        print ("Search complete.")
-        print ("Iterations:", i)
+                # This is if we reach terminal state
+                else:
+                    Result = 1
+                    if (self.verbose):
+                        print ("Result: ", Result)
+                    self.Backpropagation(X, Result)
 
-        
-        self.storeGameStates.append(self.BestChild().state) # Get the best child and append it to the list of game states
-        self.root = self.BestChild() # Set the root to the best child
+                curr_time = utils_rl.timer()
 
-        # Handle storage for plotting
-        self.store_action_id.append(self.counter)
-        self.counter += 1
+                # stop loop if time exceeds threshold
+                # if (curr_time - start_time) > self.action_timeThresh:
+                #     break   
+                    
+            #     self.PrintResult(Result)
+            # self.PrintTree()
+            print ("Search complete.")
+            print ("Iterations:", i)
 
-        # delete tree from memory
-        print('Clearing memory by deleting the parents')
-        if clear_root:
-            self.root.visits = 0
-            self.root.sputc = 0
-        if del_children and limit_del:
-            self.delete_children(self.root, numActions+1)
-        elif del_children and not limit_del:
-            self.root.children = []
-        self.root.parent = None
-        print('root visited: ', self.root.visits)
+            
+            self.storeGameStates.append(self.BestChild().state) # Get the best child and append it to the list of game states
+            self.root = self.BestChild() # Set the root to the best child
+
+            # Handle storage for plotting
+            self.store_action_id.append(self.counter)
+            self.counter += 1
+
+            # delete tree from memory
+            print('Clearing memory by deleting the parents')
+            if clear_root:
+                self.root.visits = 0
+                self.root.sputc = 0
+            if del_children and limit_del:
+                self.delete_children(self.root, numActions+1)
+            elif del_children and not limit_del:
+                self.root.children = []
+            self.root.parent = None
+            print('root visited: ', self.root.visits)
 
         # Handle number of iteration for next action (MaxIteration - number of times that node has been visited)
-        if not clear_root:
-            self.MaxIter = MaxIteration - self.root.visits
+        # if not clear_root:
+        #     self.MaxIter = MaxIteration - self.root.visits
 
         self.save_tree('tree.pkl') # Save the tree to a pickle file
         
         # Plot the results
-        utils.plotter(self.store_action_id, self.store_cost, self.store_dist, self.store_res, self.store_res_food, self.store_res_water, self.store_res_equip,
-        max_cost=utils.calcRes(self.root.state)["MAX_RES"], name='cost_components_long_different_res_weights')
         count = 0
         for i in self.storeGameStates:
-            utils.SaveResult('\n State: {}'.format(i))
+            utils_rl.saveText('\n State: {}'.format(i))
             count += 1
-            print("\n Action State {}: {}".format(count, glue.state.decompose_game_state(i, glue.num_vechicles, glue.num_facilities)))
+            print("\n Action State {}: {}".format(count, i))

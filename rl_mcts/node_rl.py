@@ -11,6 +11,7 @@ class Node:
         self.parent = None
         self.children = []
         self.sputc = 0.0
+        self.action = None
 
         self.val = 0.0
 

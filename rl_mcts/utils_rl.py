@@ -1,3 +1,5 @@
+import time
+
 from config_rl import verbose, goal_coords, Actions, n_agents, MCTS_REWARD_PARAMETER, RewardFormat
 
 def state_vector_parser(state, verbose=verbose) -> list:
@@ -132,6 +134,32 @@ def calc_rollout_reward(state, reward_format=MCTS_REWARD_PARAMETER):
 
     elif reward_format == RewardFormat.INVERSE:
         assert len(state)==2, "Input should be state vector and num of steps taken to reach the terminal state"
+
+
+def saveText(filename, text):
+    '''
+    Saves a text file with the given filename and text
+    
+    Parameters
+    ----------
+    filename : str
+        The name of the file to be saved
+    text : str
+        The text to be saved in the file
+    '''
+    with open(filename, 'w') as f:
+        f.write(text)
+
+def timer():
+    '''
+    Returns the current time in seconds
+    
+    Returns
+    -------
+    time : float
+        The current time in seconds
+    '''
+    return time.time()
 
         
 
