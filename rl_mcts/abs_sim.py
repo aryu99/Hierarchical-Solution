@@ -37,13 +37,13 @@ class AbstractSimulator:
         state = []
 
         for i in range(len(self.obs)):
-            state = state.append(Agent(i+1, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0))
+            state.append(Agent(i+1, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0))
 
         for i in range(len(self.shelfs)):
             if (self.shelfs[i].x, self.shelfs[i].y) in self.req_shelfs:
-                state = state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
+                state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
             else:
-                state = state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
+                state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
 
         if verbose:
             print("Getting the current state")

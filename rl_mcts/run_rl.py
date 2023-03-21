@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import copy
-import MCTS_rl
+from MCTS_rl import MCTS
 
 import utils_rl
 import glue_rl
@@ -33,7 +33,7 @@ def run_MCTS():
     root_node.visits = 1
     print(root_state)
 
-    sol = MCTS_rl(root_node)
+    sol = MCTS_rl.MCTS(root_node)
     time = utils_rl.timer()
     sol.Run(MaxIteration, numActions, del_children=True, limit_del = True, clear_root=False, time_thresh=30)
     end_time = utils_rl.timer()

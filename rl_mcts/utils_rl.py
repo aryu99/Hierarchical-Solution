@@ -81,7 +81,7 @@ def num_steps(state, agent, action:list, verbose=verbose):
                 num_steps = (abs(agent_pos[0] - shelf_pos[0]) + abs(agent_pos[1] - shelf_pos[1])) + 1
                 return num_steps
 
-def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords[1]):
+def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords):
     '''
     Returns the next coordinates of the agent after performing an action for a given number of steps
     
@@ -105,7 +105,7 @@ def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords[1]):
     '''
     available_steps = execution_steps
 
-    goal_pos = target
+    goal_pos = target[1]
     agent_x = x_coord
     agent_y = y_coord
 

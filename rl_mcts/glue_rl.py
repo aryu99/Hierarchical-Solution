@@ -4,8 +4,9 @@ import copy
 import numpy as np
 import itertools
 
-from abs_sim import AbstractSimulator
 from config_rl import env, goal_coords, shelf_coords, verbose
+from abs_sim import AbstractSimulator
+
 
 # import sys
 # sys.path.append('../../simulation/src')
