@@ -34,7 +34,7 @@ default_layout = """
 .........
 .........
 .........
-...ggg...
+....g....
 """
 
 env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=n_agents, layout=default_layout)
@@ -71,7 +71,7 @@ class RewardFormat(Enum):
     '''
     Enum for the reward format
 
-    TERMINAL: Reward is given after seeng the state after a set number of rollout steps
+    TERMINAL: Preset Reward is given after seeng the state after a set number of rollout steps
     INVERSE: Reward is inversely proportional to the number of rollout steps it takes to reach the terminal state
     '''
     TERMINAL = 0
