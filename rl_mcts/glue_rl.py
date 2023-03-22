@@ -4,7 +4,7 @@ import copy
 import numpy as np
 import itertools
 
-from config_rl import env, goal_coords, shelf_coords, verbose
+from config_rl import env, goal_coords, shelf_coords, verbose, Actions
 from abs_sim import AbstractSimulator
 
 
@@ -16,7 +16,7 @@ def get_sim_state(env, verbose=False):
     Returns the current state of the simulation
     '''
     if verbose:
-        print("\n Getting the current state \n")
+        print("\n Getting the sim state \n")
     obs = env.reset()
     req_queue = env.request_queue
 
@@ -29,14 +29,16 @@ def get_current_state():
     '''
     Returns the current state of the simulation
     '''
-    print("\n Getting the current state \n")
+    if verbose:
+        print("\n Getting the current state \n")
     return abstract_sim.get_current_state()
 
 def check_terminal_state(state):
     '''
     Returns whether the given state is a terminal state
     '''
-    print("\n Checking if the given state is a terminal state \n")
+    if verbose:
+        print("\n Checking if the given state is a terminal state \n")
     return abstract_sim.check_terminal_state(state)
 
 # def run_visualizer(game_states, save_to_file=False, saveGS = False):
@@ -74,14 +76,15 @@ def GetNextState(CurrState):
     -------
     NextState : game state
     '''
-    abstract_sim.reset(CurrState)
+    abstract_sim.reset_state(CurrState)
     Actions = abstract_sim.get_actions()
     Action = {}
 
     # Get a random action for each vehicle
-    for key,value in Actions.items():
-        i = np.random.randint(0, len(value))
-        Action[key] = value[i]
+    while len(Action)==0 or list(Action.values())[0] == list(Actions.values())[1]:
+        for key,value in Actions.items():
+            i = np.random.randint(0, len(value))
+            Action[key] = value[i]
     
     # Get the next state
     NextState = abstract_sim.execute_action(Action)  
@@ -100,7 +103,8 @@ def EvalNextStates(CurrState):
     -------
     NextStates : list of game states
     '''
-    print("\n Evaluating the new states \n")
+    if verbose:
+        print("\n Evaluating the new states \n")
     State = copy.deepcopy(CurrState)
     
     abstract_sim.reset_state(State)
@@ -121,9 +125,21 @@ def EvalNextStates(CurrState):
 
     # Get the next state for each combination of actions
     NextStates = []
-    print("ActionList",storeActions)
+    # counter = 0
+    # for agent_action in storeActions:
+    #     counter += 1
+    #     for key,value in agent_action.items():
+            # print("\n ---Printing storeAction {} Agent: {}, Action executed: {}  \n".format(counter, key, value))
+
+    # print("\n ---Printing storeActions: {} \n".format(storeActions))
     for m in range(len(storeActions)):
-        abstract_sim.reset_state(State)        
-        NextStates.append(abstract_sim.execute_action(storeActions[m])) 
+        # check if all values are same in the dictionary
+        if all(x == list(storeActions[m].values())[0] for x in storeActions[m].values()):
+            continue
+        abstract_sim.reset_state(copy.deepcopy(State))      
+        # print("\n ---Printing Action getting executed: {} \n".format(storeActions[m]))  
+        # for key,value in storeActions[m].items():
+            # print("\n ---Printing execution Agent: {}, Action executed: {}  \n".format(key, value))
+        NextStates.append((abstract_sim.execute_action(storeActions[m]), storeActions[m])) 
 
     return NextStates

@@ -85,9 +85,9 @@ class AbstractSimulator:
 
             elif agent.shelf == 0: # Action: LOAD_SHELF
                 for shelf in shelf_states:
-                    for action in action_list:
-                        if action == [Actions.LOAD_SHELF, shelf.id]:
-                            continue
+                    # for action in action_list:
+                    #     if action == [Actions.LOAD_SHELF, shelf.id]:
+                    #         continue
                     if shelf.req == 1 and shelf.pos == 0:
                         action_list.append([Actions.LOAD_SHELF, shelf.id])                     
                 possible_actions[agent] = action_list
@@ -160,7 +160,6 @@ class AbstractSimulator:
         # This loop figures out the number of steps required for each agent to complete action
         for key, value in actions.items():
             for agent in agents:
-                print("\n Agent: {}, Key: {}".format(agent, key))
                 if agent.id == key.id:
                     store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
                     store_actions_steps[key] = [value, store_num_steps[key]]
