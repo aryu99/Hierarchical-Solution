@@ -71,7 +71,8 @@ def num_steps(state, agent, action:list, verbose=verbose):
             continue_flag = 2 
         
     if action == [Actions.GOTO_GOAL] or continue_flag == 1: # For GOTO GOAL
-        goal_pos = goal_coords[1]
+        # print("\n ---- Printing goal coords in num_steps: {}---- \n".format(goal_coords))
+        goal_pos = goal_coords[0]
         num_steps = abs(agent_pos[0] - goal_pos[0]) + abs(agent_pos[1] - goal_pos[1])
         return num_steps
     
@@ -82,7 +83,7 @@ def num_steps(state, agent, action:list, verbose=verbose):
                 num_steps = (abs(agent_pos[0] - shelf_pos[0]) + abs(agent_pos[1] - shelf_pos[1])) + 1
                 return num_steps
 
-def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords):
+def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords[0]):
     '''
     Returns the next coordinates of the agent after performing an action for a given number of steps
     
@@ -106,9 +107,11 @@ def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords):
     '''
     available_steps = execution_steps
 
-    goal_pos = target[1]
+    goal_pos = target
     agent_x = x_coord
     agent_y = y_coord
+
+
 
     while available_steps > 0:
         if agent_y < goal_pos[1]:
@@ -166,6 +169,20 @@ def timer():
         The current time in seconds
     '''
     return time.time()
+
+def print_state(state):
+    '''
+    Prints the current state of the simulation
+    
+    Parameters
+    ----------
+    state : list
+        The state of the abstract simulation
+    '''
+    # print("\n ---- Printing state ---- \n")
+    for entity in state:
+        print(entity)
+    # print("\n ---- End of state ---- \n")
 
         
 

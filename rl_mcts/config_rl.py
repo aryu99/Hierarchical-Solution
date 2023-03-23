@@ -19,7 +19,7 @@ class Actions(Enum):
     LOAD_SHELF = 0
     UNLOAD_SHELF = 1
     GOTO_GOAL = 2
-    CONTINUE = 3
+    # CONTINUE = 3
     # DO_NOTHING = 3
     
 

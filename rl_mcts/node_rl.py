@@ -16,6 +16,7 @@ class Node:
         self.val = 0.0
 
     def __str__(self):
+        print("\n | Printing Node | \n")
         for i in range(len(self.state)):
             print(self.state[i])
         return "Node State length: {} \n Node Visits: {} \n Node SPUTC: {} \n Node Action: {} \n Node Value: {} \n".format(len(self.state), self.visits, self.sputc, self.action, self.val)
@@ -55,7 +56,7 @@ class Node:
         return Level
 
     @staticmethod
-    def IsNodeTerminal(node):
+    def IsNodeTerminal(node, input_as_state=False):
         '''
         Checks if a given node is terminal
 
@@ -67,6 +68,8 @@ class Node:
         -------
         True if the node is terminal, False otherwise (bool)
         '''
+        if input_as_state:
+            return check_terminal_state(node)
         return check_terminal_state(node.state)
 
     @staticmethod

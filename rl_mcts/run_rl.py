@@ -10,7 +10,7 @@ import node_rl
 # from config_rl import n_agents, n_requests, default_layout, env, verbose, goal_coords, shelf_coords
 
 # Modifiable variables for MCTS
-MaxIteration = 10 #maximum number of iterations for selecting one action
+MaxIteration = 2 #maximum number of iterations for selecting one action
 numActions = 50 # number of actions to be selected
 
 
@@ -28,10 +28,8 @@ def run_MCTS():
     '''
     print("Running the MCTS solution until something gets delivered")
     root_state = copy.deepcopy(glue_rl.get_current_state())
-    print(utils_rl.state_vector_parser(root_state))
     root_node = node_rl.Node(root_state)
     root_node.visits = 1
-    print(root_state)
 
     sol = MCTS(root_node)
     time = utils_rl.timer()
@@ -40,8 +38,8 @@ def run_MCTS():
     print("Time taken: ", end_time - time)
     gameStates = sol.storeGameStates
     actions = sol.storeActions
-    print(gameStates)
-    print(actions)
+    # print(gameStates)
+    # print(actions)
     pass
 
 if __name__ == "__main__":

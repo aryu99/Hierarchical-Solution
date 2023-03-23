@@ -6,6 +6,7 @@ import itertools
 
 from config_rl import env, goal_coords, shelf_coords, verbose, Actions
 from abs_sim import AbstractSimulator
+import utils_rl
 
 
 # import sys
@@ -76,6 +77,9 @@ def GetNextState(CurrState):
     -------
     NextState : game state
     '''
+    # print(type(CurrState))
+    # for entity in CurrState:
+    #     print("--- Using GetNextState State Entity: {}---".format(entity))
     abstract_sim.reset_state(CurrState)
     Actions = abstract_sim.get_actions()
     Action = {}
@@ -138,8 +142,13 @@ def EvalNextStates(CurrState):
             continue
         abstract_sim.reset_state(copy.deepcopy(State))      
         # print("\n ---Printing Action getting executed: {} \n".format(storeActions[m]))  
-        # for key,value in storeActions[m].items():
-            # print("\n ---Printing execution Agent: {}, Action executed: {}  \n".format(key, value))
+        for key,value in storeActions[m].items():
+            print("\n ---Printing execution Agent: {}, Action executed: {}  \n".format(key, value))
+        # print("\n printing the state returned by execute action \n")
+        # utils_rl.print_state(abstract_sim.execute_action(storeActions[m]))
         NextStates.append((abstract_sim.execute_action(storeActions[m]), storeActions[m])) 
-
+    # for state in NextStates:
+    #     print("\n ---Printing NextStates: {} \n".format(state))
+    #     for entity in state[0]:
+    #         print("--- Using EvalNextStates State Entity: {}---".format(entity))
     return NextStates

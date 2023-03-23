@@ -65,7 +65,7 @@ class MCTS:
             # SelectedChild.visits += 1.0
 
         if (self.verbose):
-            print("\nSelected: ", nd.Node.GetStateRepresentation(SelectedChild))
+            print("\nSelected: {}".format(SelectedChild))
 
         return SelectedChild
 
@@ -99,16 +99,14 @@ class MCTS:
                 continue
             else:
                 if (self.verbose):
-                    print("Considered child", nd.Node.GetStateRepresentation(
-                        Child.state), "UTC: inf",)
+                    print("Considered child: {}".format(Child))
                 return Child
 
         MaxWeight = -np.inf
         for Child in Node.children:
             Weight = Child.sputc
             if (self.verbose):
-                print("Considered child:", nd.Node.GetStateRepresentation(
-                    Child.state), "UTC:", Weight)
+                print("Considered child:", Child.state, "UTC:", Weight)
             if (Weight >= MaxWeight):
                 MaxWeight = Weight
                 SelectedChild = Child
@@ -143,6 +141,8 @@ class MCTS:
             print("\n ---EXPANDING--- \n")
             if (len(Leaf.children) == 0):
                 Children = self.EvalChildren(Leaf)
+                # for NewChild in Children:
+                #     print("\n --- New Child: {} --- \n".format(NewChild))
                 for NewChild in Children:
                     if (np.all(NewChild.state == Leaf.state)):
                         continue
@@ -150,7 +150,7 @@ class MCTS:
             assert (len(Leaf.children) > 0), "Error"
             Child = self.SelectChildNode(Leaf)
         if (self.verbose):
-            print("Expanded: ", nd.Node.GetStateRepresentation(Child.state))
+            print("\n --- Selected Child after expansion: {} --- \n".format(Child))
         return Child
 
     #-----------------------------------------------------------------------#
@@ -224,6 +224,9 @@ class MCTS:
         Node
             Randomly selected child node.
         '''
+        # print("\n printing leaf : {} \n".format(Node))
+        # for child in Node.children:
+        #     print("\n printing leaf child : {} \n".format(child))
         Len = len(Node.children)
         assert Len > 0, "Incorrect length"
         i = np.random.randint(0, Len)
@@ -249,31 +252,34 @@ class MCTS:
         float
             Average score/result of the simulations.
         '''
+
+        print("\n ---SIMULATION--- \n")
         num_sim = MCTS.num_sim
         i = 0
         simResult = 0
-        while i<num_sim:
-            CurrentState = copy.deepcopy(Node.state)
-            print ("\n ---SIMULATION--- \n")
-            if (self.verbose):
-                print ("Begin Simulation")
+        # while i<num_sim:
+        CurrentState = copy.deepcopy(Node.state)
+        print ("\n ---SIMULATION Rollout: {}--- \n".format(i))
+        if (self.verbose):
+            print ("Begin Simulation")
+        # print("\n ---Rollout node state: {}--- \n".format(Node))
+        relativeLevel = 1
+        # Result = nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
+        Result = 0
+        # Perform simulation.
+        while (nd.Node.IsLevelTerminal(relativeLevel)):
+            relativeLevel += 1.0
+            CurrentState = glue_rl.GetNextState(CurrentState)
+            # Result += nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
+            if nd.Node.IsNodeTerminal(CurrentState, input_as_state=True):
+                Result += 1
+                break
 
-            relativeLevel = 1
             # Result = nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
-            Result = 0
-            # Perform simulation.
-            while (nd.Node.IsLevelTerminal(relativeLevel)):
-                relativeLevel += 1.0
-                CurrentState = glue_rl.GetNextState(CurrentState)
-                # Result += nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
-                if nd.Node.IsNodeTerminal(CurrentState):
-                    Result += 1
-                    break
-
-            # Result = nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
-            simResult += Result
-            i += 1
-        return simResult/num_sim
+            # simResult += Result
+            # i += 1
+        # return simResult/num_sim
+        return Result
 
     #-----------------------------------------------------------------------#
     # Description:
@@ -418,7 +424,7 @@ class MCTS:
         string = str(self.GetLevel(Node)) + ") (["
         # for i in Node.state.bins: # game specific (scrap)
         # 	string += str(i) + ", "
-        string += str(nd.Node.GetStateRepresentation(Node.state))
+        string += str(Node)
         string += "], W: " + str(Node.wins) + ", N: " + \
             str(Node.visits) + ", UTC: " + str(Node.sputc) + ") \n"
         file.write(string)
@@ -471,8 +477,7 @@ class MCTS:
         for Child in Node.children: 
             Weight = Child.val/Child.visits            
             if (self.verbose):
-                print("Considered child:", nd.Node.GetStateRepresentation(
-                    Child.state), "UTC:", Weight)
+                print("Considered child:", Child.state, "UTC:", Weight)
             if (Weight >= MaxWeight):
                 MaxWeight = Weight
                 SelectedChild = Child
@@ -489,13 +494,14 @@ class MCTS:
     #-----------------------------------------------------------------------#
     def Run(self, MaxIteration=5, numActions=1, del_children=False, limit_del = True, clear_root = False, load = False):
         # This handles the case where the tree is not loaded from a file
-        self.storeGameStates = [self.root.state]
+        self.storeGameStates = [self.root]
         self.storeActions = []
         self.counter = 0
         self.MaxIter = MaxIteration
+        self.store_action_id = []
 
         # print("\n checking if root {} is terminal :{}".format(self.root, nd.Node.IsNodeTerminal(self.root)))
-
+        action_counter = 0
         while (nd.Node.IsNodeTerminal(self.root) == False):
             for i in range(int(self.MaxIter)):
                 # Loop for each iteration for an action
@@ -527,7 +533,7 @@ class MCTS:
                         print ("Result: ", Result)
                     self.Backpropagation(X, Result)
 
-                curr_time = utils_rl.timer()
+                # curr_time = utils_rl.timer()
 
                 # stop loop if time exceeds threshold
                 # if (curr_time - start_time) > self.action_timeThresh:
@@ -539,34 +545,44 @@ class MCTS:
             print ("Iterations:", i)
 
             
-            self.storeGameStates.append(self.BestChild().state) # Get the best child and append it to the list of game states
+            self.storeGameStates.append(self.BestChild()) # Get the best child and append it to the list of game states
             self.root = self.BestChild() # Set the root to the best child
 
             # Handle storage for plotting
             self.store_action_id.append(self.counter)
             self.counter += 1
+            # print("\n ---- New root by selecting best child: {} ----".format(self.root))
+            action_counter += 1
+            if action_counter == 2:
+                break
 
             # delete tree from memory
             print('Clearing memory by deleting the parents')
-            if clear_root:
-                self.root.visits = 0
-                self.root.sputc = 0
-            if del_children and limit_del:
-                self.delete_children(self.root, numActions+1)
-            elif del_children and not limit_del:
-                self.root.children = []
-            self.root.parent = None
-            print('root visited: ', self.root.visits)
+            # if clear_root:
+            #     self.root.visits = 0
+            #     self.root.sputc = 0
+            # if del_children and limit_del:
+            #     self.delete_children(self.root, numActions+1)
+            # elif del_children and not limit_del:
+            #     self.root.children = []
+            # self.root.parent = None
+            # print('root visited: ', self.root.visits)
 
         # Handle number of iteration for next action (MaxIteration - number of times that node has been visited)
         # if not clear_root:
         #     self.MaxIter = MaxIteration - self.root.visits
-
-        self.save_tree('tree.pkl') # Save the tree to a pickle file
+        # print("\n ====== The selected actions are: ====== \n")
+        # count = 0
+        # for node in self.storeGameStates:
+        #     count += 1
+        #     print(" Node No. : {} \n Node: {} \n".format(count, node))
         
-        # Plot the results
-        count = 0
-        for i in self.storeGameStates:
-            utils_rl.saveText('\n State: {}'.format(i), 'gameStates.txt')
-            count += 1
-            print("\n Action State {}: {}".format(count, i))
+
+        # self.save_tree('tree.pkl') # Save the tree to a pickle file
+        
+        # # Plot the results
+        # count = 0
+        # for i in self.storeGameStates:
+        #     utils_rl.saveText('\n State: {}'.format(i), 'gameStates')
+        #     count += 1
+        #     print("\n Action State {}: {}".format(count, i))
