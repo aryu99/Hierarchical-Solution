@@ -30,6 +30,7 @@ default_layout = """
 .........
 .x.....x.
 .........
+.........
 ....x....
 .........
 .........
@@ -39,24 +40,24 @@ default_layout = """
 
 env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=n_agents, layout=default_layout)
 
-def get_goal_coords(env, verbose=False):
+def get_goal_coords(init_env, verbose=False):
     '''
     Returns the goal coordinates of the environment
     '''
     if verbose:
         print("\n Getting the goal coordinates \n")
-    goal_coords = env.goals
+    goal_coords = init_env.goals
 
     return goal_coords
 
-def get_shelf_coords(env, verbose=False):
+def get_shelf_coords(init_env, verbose=False):
     '''
     Returns the coordinates of the shelves in the environment
     '''
     if verbose:
         print("\n Getting the shelf coordinates \n")
     env.reset()
-    shelf_coords = env.shelfs
+    shelf_coords = init_env.shelfs
 
     return shelf_coords
 

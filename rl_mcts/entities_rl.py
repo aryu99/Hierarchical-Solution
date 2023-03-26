@@ -1,3 +1,5 @@
+import copy
+
 class Agent:
     def __init__(self, id, x, y, shelf, flag):
         '''
@@ -52,14 +54,14 @@ class Shelf:
             Position of the shelf. 0 if it is not on an agent, otherwise the id of the agent it is on.
         '''
         self.id = id
-        self.unique_coord = (x, y)
+        self.unique_coord = (copy.deepcopy(x), copy.deepcopy(y))
         self.x = x
         self.y = y
         self.req = req
         self.pos = pos
 
     def __str__(self):
-        return "Shelf id {}: \n unique_coord: ({}) \n current_coord: (x: {}, y: {}) \n req: {} \n pos: {}".format(self.id, self.unique_coord, self.x, self.y, self.req, self.pos)
+        return "Shelf id {}: \n unique_coord: {} \n current_coord: (x: {}, y: {}) \n req: {} \n pos: {}".format(self.id, self.unique_coord, self.x, self.y, self.req, self.pos)
     
     def toggle_flag(self, flag):
         self.flag = flag

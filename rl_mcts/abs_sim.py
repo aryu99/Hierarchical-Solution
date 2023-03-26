@@ -23,6 +23,12 @@ class AbstractSimulator:
         req_shelfs : list of shelf requests
             The shelf requests of the simulation
         '''
+        # print("\n Abs Sim params: obs: {} goals: {} shelfs: {} req_shelfs: {} \n".format(obs, goals, shelfs, req_shelfs))
+        # for shelf in shelfs:
+        #     print("\n Shelf: {} \n".format(shelf))
+        # for req_shelf in req_shelfs:
+        #     print("\n Req Shelf: {} \n".format(req_shelf))
+
         self.obs = obs
         self.goals = goals
         self.shelfs = shelfs
@@ -66,7 +72,7 @@ class AbstractSimulator:
     
     def reset_state(self, state):
         self.state = state
-
+    
     def get_actions(self, verbose=verbose) -> dict:
         '''
         Returns the possible actions of the simulation
@@ -85,9 +91,6 @@ class AbstractSimulator:
 
             elif agent.shelf == 0: # Action: LOAD_SHELF
                 for shelf in shelf_states:
-                    # for action in action_list:
-                    #     if action == [Actions.LOAD_SHELF, shelf.id]:
-                    #         continue
                     if shelf.req == 1 and shelf.pos == 0:
                         action_list.append([Actions.LOAD_SHELF, shelf.id])                     
                 possible_actions[agent] = action_list
@@ -126,7 +129,7 @@ class AbstractSimulator:
 
         if verbose:
             print("\n Possible actions: ", possible_actions)
-        
+        print("\n get_actions Possible actions: ", possible_actions)
         return possible_actions
                 
             
@@ -157,21 +160,25 @@ class AbstractSimulator:
 
         agents, shelfs = utils_rl.state_vector_parser(self.state, verbose=verbose)
 
+        print("\n EXECUTE ACTION CALLED \n")
+
         # This loop figures out the number of steps required for each agent to complete action
         for key, value in actions.items():
             for agent in agents:
                 if agent.id == key.id:
                     store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
+                    assert store_num_steps[key] != None, "Number of steps required to complete action is None"
                     store_actions_steps[key] = [value, store_num_steps[key]]
-        
+        # print("store_num_steps: ", store_num_steps)
+        # for key, value in store_num_steps.items():
+        #     print("Agent {} requires {} steps to complete action {}".format(key.id, value, store_actions_steps[key][0]))
         min_steps_val = min(store_num_steps.values())
-        for key, value in store_num_steps.items():
-            print("Agent {} requires {} steps to complete action {}".format(key.id, value, store_actions_steps[key][0]))
-
+        print("store_actions_steps: ", store_actions_steps)
         print("Minimum steps required to complete action: ", min_steps_val)
 
         # This loop executes the action conditioned on the stored number of steps
         for key, value in store_actions_steps.items(): # key is the agent, value is the action (value[0]) and number of steps (value[1]) required
+            print("\n Inside execute action loop, executing action for Agent:{} Action taken: {}, current state:".format(key, value), utils_rl.print_state(self.state), "\n End printing state \n")
             if value[0] == [Actions.GOTO_GOAL]: # Action: GOTO_GOAL
                 print("\n \n GOTO_GOAL \n \n")
                 for agent in agents:
@@ -188,30 +195,33 @@ class AbstractSimulator:
                                     shelf.x, shelf.y = copy.deepcopy(goal_coords[0])
                             
                         else:
-                            available_steps = value[1] - min_steps_val
+                            available_steps = min_steps_val
                             agent.x, agent.y = utils_rl.get_next_coords(agent.x, agent.y, available_steps)
-                            agent.action = Actions.GOTO_GOAL    
+                            agent.action = [Actions.GOTO_GOAL]    
                             for shelf in shelfs:
                                 if shelf.id == key.shelf:
                                     shelf.x, shelf.y = copy.deepcopy(agent.x), copy.deepcopy(agent.y)
-                    break
+                        break
                 continue
 
 
             elif value[0][0] == Actions.LOAD_SHELF: # Action: LOAD_SHELF
-                print("\n \n LOAD_SHELF \n \n")
+                print("\n \n Agent: {}, LOAD_SHELF: {} \n \n".format(key.id, value[0][1]))
                 for agent in agents:
+                    print("\n inside load_shelf first for. Agent in consideration: {}\n".format(agent.id))
                     if agent.id == key.id:
+                        print("\n inside load_shelf first if \n")
                         assert key.shelf == 0, "For Action: LOAD_SHELF, the agent should not have a shelf"
                         assert key.flag == 0, "For Action: LOAD_SHELF, as the agent does not have any shelf, the flag should be 0"
                         
                         for shelf in shelfs:
                             if shelf.id == value[0][1]:
+                                print("\n inside load_shelf second if \n")
                                 # For simplification, we assume that the agent only picks up shelf that is requested 
                                 assert shelf.req == 1, "For Action: LOAD_SHELF, the shelf should be a requested shelf"
                                 assert shelf.pos == 0, "For Action: LOAD_SHELF, the shelf should be at a shelf position"
                                 if value[1] == min_steps_val: # If the agent is able to complete the action for the current MCTS step
-                                    print("Agent {} is able to complete the action for the current MCTS step".format(agent.id))
+                                    print("Agent {} is ABLE to complete the LOAD_SHELF {} action for the current MCTS step".format(agent.id, shelf.id))
                                     agent.x, agent.y = copy.deepcopy(shelf.x), (shelf.y)
                                     agent.action = None
                                     agent.shelf = shelf.id
@@ -221,28 +231,34 @@ class AbstractSimulator:
                                     shelf.x, shelf.y = copy.deepcopy(agent.x), copy.deepcopy(agent.y)
 
                                 else: # If the agent is not able to complete the action for the current MCTS step
-                                    available_steps = value[1] - min_steps_val
+                                    print("Agent {} is NOT ABLE to complete the LOAD_SHELF {} action for the current MCTS step".format(agent.id, shelf.id))
+                                    available_steps = min_steps_val
                                     agent.x, agent.y = utils_rl.get_next_coords(agent.x, agent.y, available_steps, target=(shelf.x, shelf.y))
                                     agent.action = [Actions.LOAD_SHELF, shelf.id]
                                     shelf.x, shelf.y = copy.deepcopy(agent.x), copy.deepcopy(agent.y)
-                            break
-                    break
+                                break
+                        break
                 continue
 
             elif value[0][0] == Actions.UNLOAD_SHELF: # Action: UNLOAD_SHELF (For now can unload a requested shelf also)
-                print("\n \n UNLOAD_SHELF \n \n")
+                print("\n \n Agent: {}, UNLOAD_SHELF: {} \n \n".format(key.id, value[0][1]))
                 for agent in agents:
                     if agent.id == key.id:
                         assert key.shelf != 0, "For Action: UNLOAD_SHELF, the agent should have a shelf"
-
-                        for shelf in shelfs:
+                        
+                        copy_shelfs = copy.deepcopy(shelfs)
+                        for shelf in copy_shelfs:
                             if shelf.id == value[0][1]:
                                 unload_coord = copy.deepcopy(shelf.unique_coord)
+                                copy_shelfs.pop(copy_shelfs.index(shelf))
+                                for check in copy_shelfs:
+                                    assert ((check.pos != 0 and (check.x, check.y) == unload_coord) or (check.x, check.y) != unload_coord), "For Action: UNLOAD_SHELF, trying to UNLOAD at a location where a shelf is already present. Shelf in consideration: {}, unload_coord: {}, shelf being unloaded: {} ".format(check, unload_coord, shelf)
                                 break
                         
                         for shelf in shelfs:
                             if shelf.id == key.shelf:
-                                if value[1] == min_steps_val:                         
+                                if value[1] == min_steps_val:  
+                                    print(" Agent is in unload shelf with ability to complete action \n")                       
                                     agent.x, agent.y = copy.deepcopy(unload_coord[0]), copy.deepcopy(unload_coord[1])
                                     agent.shelf = 0
                                     agent.action = None
@@ -251,14 +267,18 @@ class AbstractSimulator:
                                     shelf.x, shelf.y = copy.deepcopy(agent.x), copy.deepcopy(agent.y)
                                     
                                 else:
-                                    available_steps = value[1] - min_steps_val
+                                    print(" Agent is in unload shelf with ability to not complete action \n") 
+                                    available_steps = min_steps_val
+                                    print("Here")
                                     agent.x, agent.y = utils_rl.get_next_coords(agent.x, agent.y, available_steps, target=(unload_coord[0], unload_coord[1]))
+                                    print("Now Here")
                                     agent.action = [Actions.UNLOAD_SHELF, value[0][1]]
                                     shelf.x, shelf.y = copy.deepcopy(agent.x), copy.deepcopy(agent.y)
+                                    print(" Completed else stuff in UNLOAD \n") 
                             
-                    break
+                                break
                 continue
-
+        print("\n ||| FINAL STATE RETURNED BY EXECUTE_ACTION ||| \n", utils_rl.print_state(self.state))
         return self.state
 
     @staticmethod

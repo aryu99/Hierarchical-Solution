@@ -42,24 +42,6 @@ def check_terminal_state(state):
         print("\n Checking if the given state is a terminal state \n")
     return abstract_sim.check_terminal_state(state)
 
-# def run_visualizer(game_states, save_to_file=False, saveGS = False):
-#     '''
-#     Runs the visualizer on the given game states
-
-#     Parameters
-#     ----------
-#     game_states : list of game states
-#         The game states to visualize
-#     save_to_file : bool
-#         Whether to save the visualization to a file
-#     saveGS : bool
-#         Whether to save the game states to a pickle file
-#     '''
-#     if saveGS:
-#         simulation.save_to_file('test_0.pkl', gs_list = game_states)
-#     print("\n Running the visualizer \n")
-#     # visualizer.run(game_states, save_to_file=save_to_file, dir_name = 'W:/Droneconia/simulation/images/test1')
-
 # def run_save(game_states):
 #     simulation.save_to_file('test.pkl', gs_list = game_states)
 # ------------------------------------------------------------------------------------------------------------------------------
@@ -147,8 +129,8 @@ def EvalNextStates(CurrState):
         # print("\n printing the state returned by execute action \n")
         # utils_rl.print_state(abstract_sim.execute_action(storeActions[m]))
         NextStates.append((abstract_sim.execute_action(storeActions[m]), storeActions[m])) 
-    # for state in NextStates:
-    #     print("\n ---Printing NextStates: {} \n".format(state))
-    #     for entity in state[0]:
-    #         print("--- Using EvalNextStates State Entity: {}---".format(entity))
+    for state in NextStates:
+        print("\n ---Printing NextStates: {} \n".format(state))
+        for entity in state[0]:
+            print("--- Using EvalNextStates State Entity: {}---".format(entity))
     return NextStates
