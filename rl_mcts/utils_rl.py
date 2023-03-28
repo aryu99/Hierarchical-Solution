@@ -128,15 +128,15 @@ def get_next_coords(x_coord, y_coord, execution_steps, target=goal_coords[0]):
             print("Inside first if")
             agent_y += 1
             available_steps -= 1
-        elif agent_y > goal_pos[1]:
+        elif (agent_y > goal_pos[1]) and (available_steps > 0):
             print("Inside second if")
             agent_y -= 1
             available_steps -= 1
-        if agent_x < goal_pos[0]:
+        if (agent_x < goal_pos[0]) and (available_steps > 0):
             print("Inside third if")
             agent_x += 1
             available_steps -= 1
-        elif agent_x > goal_pos[0]:
+        elif (agent_x > goal_pos[0]) and (available_steps > 0):
             print("Inside fourth if")
             agent_x -= 1
             available_steps -= 1

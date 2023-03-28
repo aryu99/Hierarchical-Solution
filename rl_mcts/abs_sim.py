@@ -1,4 +1,4 @@
-import numpy as np
+import math
 from enum import Enum
 import copy
 
@@ -35,7 +35,7 @@ class AbstractSimulator:
         self.req_shelfs = req_shelfs
         self.state = self.init_vector_state()
 
-    def init_vector_state(self, verbose=verbose) -> np.array:
+    def init_vector_state(self, verbose=verbose) -> list:
         '''
         Returns the current state of the simulation as a vector of Agent and Shelf objects
         '''
@@ -72,8 +72,9 @@ class AbstractSimulator:
     
     def reset_state(self, state):
         self.state = state
-    
-    def get_actions(self, verbose=verbose) -> dict:
+
+    # @staticmethod
+    def get_actions(self, verbose=verbose) -> dict: # TO revert to code before testing, change input: state -> self and pass self.state to state_parser
         '''
         Returns the possible actions of the simulation
 
@@ -108,6 +109,7 @@ class AbstractSimulator:
                         if shelf.unique_coord in store_static_shelf_pos:
                             continue
                         else:
+                            print("\n Shelf: {} \n".format(shelf))
                             action_list.append([Actions.UNLOAD_SHELF, shelf.id])
                 possible_actions[agent] = action_list
                 continue
@@ -126,14 +128,18 @@ class AbstractSimulator:
                             action_list.append([Actions.UNLOAD_SHELF, shelf.id]) # shelf.id is the id of the shelf where the agent is unloading
                 possible_actions[agent] = action_list
                 continue
+            
+            if possible_actions[agent] == []:
+                possible_actions[agent] = [Actions.DO_NOTHING] 
+                continue
 
         if verbose:
             print("\n Possible actions: ", possible_actions)
-        print("\n get_actions Possible actions: ", possible_actions)
+        # print("\n get_actions Possible actions: ", possible_actions)
         return possible_actions
                 
             
-    def execute_action(self, actions, verbose=verbose) -> np.array:
+    def execute_action(self, actions, verbose=verbose) -> list: 
         '''
         Executes the action in the simulation. Also figures out which agent completes action first
 
@@ -166,6 +172,10 @@ class AbstractSimulator:
         for key, value in actions.items():
             for agent in agents:
                 if agent.id == key.id:
+                    if value == [Actions.DO_NOTHING]:
+                        store_num_steps[key] = math.inf
+                        store_actions_steps[key] = [value, store_num_steps[key]]
+                        continue
                     store_num_steps[key] = utils_rl.num_steps(self.state, key, value)
                     assert store_num_steps[key] != None, "Number of steps required to complete action is None"
                     store_actions_steps[key] = [value, store_num_steps[key]]
@@ -179,6 +189,10 @@ class AbstractSimulator:
         # This loop executes the action conditioned on the stored number of steps
         for key, value in store_actions_steps.items(): # key is the agent, value is the action (value[0]) and number of steps (value[1]) required
             print("\n Inside execute action loop, executing action for Agent:{} Action taken: {}, current state:".format(key, value), utils_rl.print_state(self.state), "\n End printing state \n")
+            if value[0] == Actions.DO_NOTHING: # Action: DO_NOTHING
+                print("\n \n DO_NOTHING \n \n")
+                continue
+
             if value[0] == [Actions.GOTO_GOAL]: # Action: GOTO_GOAL
                 print("\n \n GOTO_GOAL \n \n")
                 for agent in agents:

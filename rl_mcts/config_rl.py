@@ -20,7 +20,7 @@ class Actions(Enum):
     UNLOAD_SHELF = 1
     GOTO_GOAL = 2
     # CONTINUE = 3
-    # DO_NOTHING = 3
+    DO_NOTHING = 3
     
 
 n_agents = 2
