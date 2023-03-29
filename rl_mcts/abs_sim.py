@@ -102,15 +102,15 @@ class AbstractSimulator:
                 store_static_shelf_pos = []
                 for shelf in shelf_states:
                     if shelf.pos == 0:
-                        store_static_shelf_pos.append([shelf.x, shelf.y])
+                        store_static_shelf_pos.append((shelf.x, shelf.y))
                 
                 for shelf in shelf_states:
-                    if shelf.pos != 0:
-                        if shelf.unique_coord in store_static_shelf_pos:
-                            continue
-                        else:
-                            print("\n Shelf: {} \n".format(shelf))
-                            action_list.append([Actions.UNLOAD_SHELF, shelf.id])
+                    # if shelf.pos != 0:
+                    if shelf.unique_coord in store_static_shelf_pos:
+                        continue
+                    else:
+                        print("\n Shelf: {} \n".format(shelf))
+                        action_list.append([Actions.UNLOAD_SHELF, shelf.id])
                 possible_actions[agent] = action_list
                 continue
 
@@ -118,14 +118,14 @@ class AbstractSimulator:
                 store_static_shelf_pos = []
                 for shelf in shelf_states:
                     if shelf.pos == 0:
-                        store_static_shelf_pos.append([shelf.x, shelf.y])
+                        store_static_shelf_pos.append((shelf.x, shelf.y))
                 
                 for shelf in shelf_states:
-                    if shelf.pos != 0:
-                        if shelf.unique_coord in store_static_shelf_pos:
-                            continue
-                        else:
-                            action_list.append([Actions.UNLOAD_SHELF, shelf.id]) # shelf.id is the id of the shelf where the agent is unloading
+                    # if shelf.pos != 0:
+                    if shelf.unique_coord in store_static_shelf_pos:
+                        continue
+                    else:
+                        action_list.append([Actions.UNLOAD_SHELF, shelf.id]) # shelf.id is the id of the shelf where the agent is unloading
                 possible_actions[agent] = action_list
                 continue
             

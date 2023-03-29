@@ -494,7 +494,7 @@ class MCTS:
     #-----------------------------------------------------------------------#
     def Run(self, MaxIteration=5, numActions=1, del_children=False, limit_del = True, clear_root = False, load = False):
         # This handles the case where the tree is not loaded from a file
-        self.storeGameStates = [self.root]
+        self.storeGameStates = [self.root.state]
         self.storeActions = []
         self.counter = 0
         self.MaxIter = MaxIteration
@@ -545,19 +545,20 @@ class MCTS:
             print ("Iterations:", i)
 
             
-            self.storeGameStates.append(self.BestChild()) # Get the best child and append it to the list of game states
+            self.storeGameStates.append(self.BestChild().state) # Get the best child state and append it to the list of game states
+            self.storeActions.append(self.BestChild().action) # Get the best child action and append it to the list of actions
             self.root = self.BestChild() # Set the root to the best child
 
             # Handle storage for plotting
             self.store_action_id.append(self.counter)
             self.counter += 1
             # print("\n ---- New root by selecting best child: {} ----".format(self.root))
-            action_counter += 1
-            if action_counter == 2:
-                break
+            # action_counter += 1
+            # if action_counter == 50:
+            #     break
 
             # delete tree from memory
-            print('Clearing memory by deleting the parents')
+            # print('Clearing memory by deleting the parents')
             # if clear_root:
             #     self.root.visits = 0
             #     self.root.sputc = 0

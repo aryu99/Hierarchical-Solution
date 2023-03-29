@@ -10,7 +10,7 @@ import node_rl
 # from config_rl import n_agents, n_requests, default_layout, env, verbose, goal_coords, shelf_coords
 
 # Modifiable variables for MCTS
-MaxIteration = 2 #maximum number of iterations for selecting one action
+MaxIteration = 10 #maximum number of iterations for selecting one action
 numActions = 50 # number of actions to be selected
 
 
@@ -39,6 +39,18 @@ def run_MCTS():
     gameStates = sol.storeGameStates
     actions = sol.storeActions
     # print(gameStates)
+    state_count = 0
+    print("\n printing gameStates: \n")
+    for state in gameStates:
+        state_count += 1
+        print("\n State: {}".format(state_count))
+        for entity in state:
+            print(entity)
+    print("\n printing actions: \n")
+    for action in actions:
+        print(action)
+
+    
     # print(actions)
     pass
 

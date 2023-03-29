@@ -60,18 +60,25 @@ def GetNextState(CurrState):
     NextState : game state
     '''
     # print(type(CurrState))
-    # for entity in CurrState:
-    #     print("--- Using GetNextState State Entity: {}---".format(entity))
+    print("\n ---printing getNexState State--- \n")
+    for entity in CurrState:
+        print(entity)
     abstract_sim.reset_state(CurrState)
     Actions = abstract_sim.get_actions()
+    print("GetActions in GetNextState: {}".format(Actions))
     Action = {}
 
     # Get a random action for each vehicle
-    while len(Action)==0 or list(Action.values())[0] == list(Actions.values())[1]:
-        for key,value in Actions.items():
-            i = np.random.randint(0, len(value))
-            Action[key] = value[i]
+    if len(Action)==0:
+        while all(x == list(Action.values())[0] for x in Action.values()):
+            Action = {}
+            for key,value in Actions.items():
+                i = np.random.randint(0, len(value))
+                Action[key] = value[i]
+        
+        # print("while loop condition: {}; Action 1: {}, Action 2 : {}".format(list(Action.values())[0], list(Action.values())[1], list(Action.values())[0][0].value,  == list(Actions.values())[1])) 
     
+    print("Action in GetNextState: Act_1: {}, Act_2: {}".format(list(Action.values())[0], list(Actions.values())[1]))
     # Get the next state
     NextState = abstract_sim.execute_action(Action)  
 
@@ -117,10 +124,11 @@ def EvalNextStates(CurrState):
     #     for key,value in agent_action.items():
             # print("\n ---Printing storeAction {} Agent: {}, Action executed: {}  \n".format(counter, key, value))
 
-    # print("\n ---Printing storeActions: {} \n".format(storeActions))
+    print("\n ---Printing storeActions: {} \n".format(storeActions))
     for m in range(len(storeActions)):
         # check if all values are same in the dictionary
         if all(x == list(storeActions[m].values())[0] for x in storeActions[m].values()):
+            print("All values are same in the dictionary, hence skipping this action {}, {}".format(storeActions[m], list(storeActions[m].values())[0]))
             continue
         abstract_sim.reset_state(copy.deepcopy(State))      
         # print("\n ---Printing Action getting executed: {} \n".format(storeActions[m]))  

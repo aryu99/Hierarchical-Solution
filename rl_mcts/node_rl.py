@@ -83,7 +83,7 @@ class Node:
 
         Returns
         -------
-        True if the level is terminal, False otherwise (bool)
+        True if the level is not terminal, False otherwise (bool)
         '''
         return level < Node.levelTerminal
 
