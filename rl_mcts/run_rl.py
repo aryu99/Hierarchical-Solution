@@ -6,12 +6,12 @@ from MCTS_rl import MCTS
 import utils_rl
 import glue_rl
 import node_rl
+from config_rl import MAX_ITERATIONS_PER_ACTION
 
 # from config_rl import n_agents, n_requests, default_layout, env, verbose, goal_coords, shelf_coords
 
 # Modifiable variables for MCTS
-MaxIteration = 10 #maximum number of iterations for selecting one action
-numActions = 50 # number of actions to be selected
+MaxIteration = MAX_ITERATIONS_PER_ACTION #maximum number of iterations for selecting one action
 
 
 
@@ -33,7 +33,7 @@ def run_MCTS():
 
     sol = MCTS(root_node)
     time = utils_rl.timer()
-    sol.Run(MaxIteration, numActions, del_children=True, limit_del = True, clear_root=False)
+    sol.Run(MaxIteration, del_children=True, limit_del = True, clear_root=False)
     end_time = utils_rl.timer()
     print("Time taken: ", end_time - time)
     gameStates = sol.storeGameStates
@@ -70,16 +70,6 @@ if __name__ == "__main__":
     # Loop to run the MCTS solution
 
     run_MCTS()
-    # setting up the environment
-    # obs, req_queue = glue_rl.get_sim_state(env, verbose)
-    # abstract_sim = abs_sim.AbstractSimulator(obs, goal_coords, shelf_coords, req_queue)
-    
-    # print(goal_coords) 
-    # print(utils_rl.check_terminal_state(root_state))\
-    # print(req_queue[0].x)
-    # print(env.get_action_space())
-    # print(obs)
-    
     # env.render()
     # time.sleep(5)
 

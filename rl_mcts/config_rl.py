@@ -78,8 +78,10 @@ class RewardFormat(Enum):
     TERMINAL = 0
     INVERSE = 1
 
-MCTS_REWARD_PARAMETER = RewardFormat.TERMINAL
-MCTS_ROLLOUT_STEPS = 10
+MCTS_REWARD_PARAMETER = RewardFormat.INVERSE
+MCTS_ROLLOUT_STEPS = 2
+MCTS_SIM_PARALLEL_ROLLOUT_NUM = 10
+MAX_ITERATIONS_PER_ACTION = 1000
 
 # ---------------------------------------------
 

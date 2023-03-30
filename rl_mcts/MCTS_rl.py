@@ -14,8 +14,7 @@ import pickle as pkl
 
 import node_rl as nd
 import glue_rl
-
-import utils_rl
+from config_rl import MCTS_REWARD_PARAMETER, RewardFormat, MCTS_SIM_PARALLEL_ROLLOUT_NUM
 
 #------------------------------------------------------------------------#
 # Class for Single Player Monte Carlo Tree Search implementation.
@@ -25,7 +24,7 @@ import utils_rl
 class MCTS:
 
     # Modifiable variable that detemines the number of rollouts to be performed (and averaged) in the simulation step of MCTS.
-    num_sim = 10
+    num_sim = MCTS_SIM_PARALLEL_ROLLOUT_NUM
     #-----------------------------------------------------------------------#
     # Description: Constructor.
     # Node 	  - Root node of the tree of class Node.
@@ -257,29 +256,34 @@ class MCTS:
         num_sim = MCTS.num_sim
         i = 0
         simResult = 0
-        # while i<num_sim:
-        CurrentState = copy.deepcopy(Node.state)
-        print ("\n ---SIMULATION Rollout: {}--- \n".format(i))
-        if (self.verbose):
-            print ("Begin Simulation")
-        # print("\n ---Rollout node state: {}--- \n".format(Node))
-        relativeLevel = 1
-        # Result = nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
-        Result = 0
-        # Perform simulation.
-        while (nd.Node.IsLevelTerminal(relativeLevel)):
-            relativeLevel += 1.0
-            CurrentState = glue_rl.GetNextState(CurrentState)
-            # Result += nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
-            if nd.Node.IsNodeTerminal(CurrentState, input_as_state=True):
-                Result += 1
-                break
+        while i<num_sim:
+            CurrentState = copy.deepcopy(Node.state)
+            print ("\n ---SIMULATION Rollout: {}--- \n".format(i))
+            if (self.verbose):
+                print ("Begin Simulation")
+            relativeLevel = 1
+            Result = 0
+
+            # Perform simulation.
+            if MCTS_REWARD_PARAMETER.value == 0:
+                while (nd.Node.IsLevelTerminal(relativeLevel)):
+                    relativeLevel += 1.0
+                    CurrentState = glue_rl.GetNextState(CurrentState)
+                    if nd.Node.IsNodeTerminal(CurrentState, input_as_state=True):
+                        Result += nd.Node.GetResult(CurrentState, 0)
+                        break
+
+            elif MCTS_REWARD_PARAMETER.value == 1:
+                while nd.Node.IsNodeTerminal(CurrentState, input_as_state=True) == False:
+                    relativeLevel += 1
+                    CurrentState = glue_rl.GetNextState(CurrentState)
+                Result += 1/relativeLevel + nd.Node.GetResult(CurrentState, 1)
 
             # Result = nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
-            # simResult += Result
-            # i += 1
-        # return simResult/num_sim
-        return Result
+            simResult += Result
+            i += 1
+        return simResult/num_sim
+
 
     #-----------------------------------------------------------------------#
     # Description:

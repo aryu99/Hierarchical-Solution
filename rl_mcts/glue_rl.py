@@ -59,26 +59,23 @@ def GetNextState(CurrState):
     -------
     NextState : game state
     '''
-    # print(type(CurrState))
-    print("\n ---printing getNexState State--- \n")
-    for entity in CurrState:
-        print(entity)
+
     abstract_sim.reset_state(CurrState)
     Actions = abstract_sim.get_actions()
-    print("GetActions in GetNextState: {}".format(Actions))
     Action = {}
 
     # Get a random action for each vehicle
     if len(Action)==0:
         while all(x == list(Action.values())[0] for x in Action.values()):
+            if len(Action) != 0 and list(Action.values())[0][0].value == 2:
+                break
             Action = {}
             for key,value in Actions.items():
                 i = np.random.randint(0, len(value))
                 Action[key] = value[i]
-        
-        # print("while loop condition: {}; Action 1: {}, Action 2 : {}".format(list(Action.values())[0], list(Action.values())[1], list(Action.values())[0][0].value,  == list(Actions.values())[1])) 
-    
-    print("Action in GetNextState: Act_1: {}, Act_2: {}".format(list(Action.values())[0], list(Actions.values())[1]))
+    if verbose:
+        print("Action in GetNextState: Act_1: {}, Act_2: {}".format(list(Action.values())[0], list(Actions.values())[1]))
+
     # Get the next state
     NextState = abstract_sim.execute_action(Action)  
 
@@ -116,29 +113,20 @@ def EvalNextStates(CurrState):
             storeAction[AgentList[j]] = combinatonList[i][j]
         storeActions.append(storeAction)
 
-    # Get the next state for each combination of actions
     NextStates = []
-    # counter = 0
-    # for agent_action in storeActions:
-    #     counter += 1
-    #     for key,value in agent_action.items():
-            # print("\n ---Printing storeAction {} Agent: {}, Action executed: {}  \n".format(counter, key, value))
-
-    print("\n ---Printing storeActions: {} \n".format(storeActions))
+    
     for m in range(len(storeActions)):
         # check if all values are same in the dictionary
         if all(x == list(storeActions[m].values())[0] for x in storeActions[m].values()):
-            print("All values are same in the dictionary, hence skipping this action {}, {}".format(storeActions[m], list(storeActions[m].values())[0]))
-            continue
+            if list(storeActions[m].values())[0][0].value == 2:
+                abstract_sim.reset_state(copy.deepcopy(State))      
+                NextStates.append((abstract_sim.execute_action(storeActions[m]), storeActions[m])) 
+
+            else:
+                if verbose:
+                    print("All values are same in the dictionary and not GOTO_GOAL, hence skipping this action {}, {}".format(storeActions[m], list(storeActions[m].values())[0]))
+                continue
         abstract_sim.reset_state(copy.deepcopy(State))      
-        # print("\n ---Printing Action getting executed: {} \n".format(storeActions[m]))  
-        for key,value in storeActions[m].items():
-            print("\n ---Printing execution Agent: {}, Action executed: {}  \n".format(key, value))
-        # print("\n printing the state returned by execute action \n")
-        # utils_rl.print_state(abstract_sim.execute_action(storeActions[m]))
         NextStates.append((abstract_sim.execute_action(storeActions[m]), storeActions[m])) 
-    for state in NextStates:
-        print("\n ---Printing NextStates: {} \n".format(state))
-        for entity in state[0]:
-            print("--- Using EvalNextStates State Entity: {}---".format(entity))
+
     return NextStates

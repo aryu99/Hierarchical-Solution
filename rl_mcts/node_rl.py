@@ -1,9 +1,11 @@
 from glue_rl import check_terminal_state
+from config_rl import MCTS_ROLLOUT_STEPS
+from utils_rl import calc_rollout_reward
 
 class Node:
     # w_res = 1
     # w_dist = 1
-    levelTerminal = 5
+    levelTerminal = MCTS_ROLLOUT_STEPS
 
     def __init__(self, state):
         self.state = state
@@ -88,7 +90,7 @@ class Node:
         return level < Node.levelTerminal
 
     @staticmethod
-    def GetResult(resCost, distCost):
+    def GetResult(state, rewardType):
         '''
         Returns the result of the simulation
 
@@ -101,7 +103,9 @@ class Node:
         -------
         Result of the simulation (float)
         '''
-        return Node.w_res*resCost - Node.w_dist*distCost
+        reward = calc_rollout_reward(state, reward_format=rewardType)
+        assert reward is not None, "Reward is None"
+        return reward
 
 
     @staticmethod
