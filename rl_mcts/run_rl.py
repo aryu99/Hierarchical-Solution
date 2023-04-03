@@ -1,14 +1,12 @@
 import time
-import numpy as np
 import copy
-from MCTS_rl import MCTS
+
 
 import utils_rl
 import glue_rl
 import node_rl
-from config_rl import MAX_ITERATIONS_PER_ACTION
-
-# from config_rl import n_agents, n_requests, default_layout, env, verbose, goal_coords, shelf_coords
+from config_rl import MAX_ITERATIONS_PER_ACTION, Actions
+from MCTS_rl import MCTS
 
 # Modifiable variables for MCTS
 MaxIteration = MAX_ITERATIONS_PER_ACTION #maximum number of iterations for selecting one action
@@ -19,6 +17,11 @@ def train_rl_subcontrollers():
     '''
     Train all the RL Subcontrollers
     '''
+    for action in Actions:
+        if action.value == 3:
+            continue
+        else:
+            
     print("Training all the RL Subcontrollers")
     pass
 
@@ -50,8 +53,6 @@ def run_MCTS():
     for action in actions:
         print(action)
 
-    
-    # print(actions)
     pass
 
 if __name__ == "__main__":

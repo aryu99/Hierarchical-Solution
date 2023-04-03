@@ -140,8 +140,6 @@ class MCTS:
             print("\n ---EXPANDING--- \n")
             if (len(Leaf.children) == 0):
                 Children = self.EvalChildren(Leaf)
-                # for NewChild in Children:
-                #     print("\n --- New Child: {} --- \n".format(NewChild))
                 for NewChild in Children:
                     if (np.all(NewChild.state == Leaf.state)):
                         continue
@@ -258,9 +256,8 @@ class MCTS:
         simResult = 0
         while i<num_sim:
             CurrentState = copy.deepcopy(Node.state)
-            print ("\n ---SIMULATION Rollout: {}--- \n".format(i))
             if (self.verbose):
-                print ("Begin Simulation")
+                print ("\n ---SIMULATION Rollout: {}--- \n".format(i))
             relativeLevel = 1
             Result = 0
 
@@ -279,7 +276,6 @@ class MCTS:
                     CurrentState = glue_rl.GetNextState(CurrentState)
                 Result += 1/relativeLevel + nd.Node.GetResult(CurrentState, 1)
 
-            # Result = nd.Node.GetResult(utils.calcRes(CurrentState)["TOTAL"], utils.calcDistCost(CurrentState))
             simResult += Result
             i += 1
         return simResult/num_sim
@@ -496,7 +492,7 @@ class MCTS:
     #	Runs the SP-MCTS.
     # MaxIter	- Maximum iterations to run the search algorithm.
     #-----------------------------------------------------------------------#
-    def Run(self, MaxIteration=5, numActions=1, del_children=False, limit_del = True, clear_root = False, load = False):
+    def Run(self, MaxIteration=5, del_children=False, limit_del = True, clear_root = False, load = False):
         # This handles the case where the tree is not loaded from a file
         self.storeGameStates = [self.root.state]
         self.storeActions = []

@@ -5,7 +5,6 @@ import copy
 from config_rl import n_requests, verbose, goal_coords, Actions
 from entities_rl import Agent, Shelf
 import utils_rl
-# from config import verbose
 
 class AbstractSimulator:
     def __init__(self, obs, goals:list, shelfs:list, req_shelfs:list):
@@ -43,7 +42,7 @@ class AbstractSimulator:
         state = []
 
         for i in range(len(self.obs)):
-            state.append(Agent(i+1, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0))
+            state.append(Agent(i+1, self.obs[i][0], self.obs[i][1], self.obs[i][2], 0)) # id, x, y, shelf, flag
 
         requested_shelf_coords = []
         for req_shelf in self.req_shelfs:

@@ -6,6 +6,7 @@ sys.path.append('../../robotic_warehouse/')
 
 import rware
 
+# Global verbose
 verbose = False
 
 
@@ -19,7 +20,6 @@ class Actions(Enum):
     LOAD_SHELF = 0
     UNLOAD_SHELF = 1
     GOTO_GOAL = 2
-    # CONTINUE = 3
     DO_NOTHING = 3
     
 
@@ -38,7 +38,10 @@ default_layout = """
 ....g....
 """
 
-env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=n_agents, layout=default_layout)
+
+def make_env():
+    env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=n_agents, layout=default_layout)
+    return env
 
 def get_goal_coords(init_env, verbose=False):
     '''
@@ -56,13 +59,13 @@ def get_shelf_coords(init_env, verbose=False):
     '''
     if verbose:
         print("\n Getting the shelf coordinates \n")
-    env.reset()
+    init_env.reset()
     shelf_coords = init_env.shelfs
 
     return shelf_coords
 
-goal_coords = get_goal_coords(env, verbose)
-shelf_coords = get_shelf_coords(env, verbose)
+goal_coords = get_goal_coords(make_env(), verbose)
+shelf_coords = get_shelf_coords(make_env(), verbose)
 
 
 # ---------------------------------------------

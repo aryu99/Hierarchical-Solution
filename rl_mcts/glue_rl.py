@@ -1,16 +1,10 @@
-# from run_search import simulation
 import numpy as np
 import copy
 import numpy as np
 import itertools
 
-from config_rl import env, goal_coords, shelf_coords, verbose, Actions
+from config_rl import make_env, goal_coords, shelf_coords, verbose
 from abs_sim import AbstractSimulator
-import utils_rl
-
-
-# import sys
-# sys.path.append('../../simulation/src')
 
 def get_sim_state(env, verbose=False):
     '''
@@ -23,7 +17,7 @@ def get_sim_state(env, verbose=False):
 
     return obs, req_queue  
 
-obs, req_queue = get_sim_state(env, verbose)
+obs, req_queue = get_sim_state(make_env(), verbose)
 abstract_sim = AbstractSimulator(obs, goal_coords, shelf_coords, req_queue)
 
 def get_current_state():
@@ -114,7 +108,7 @@ def EvalNextStates(CurrState):
         storeActions.append(storeAction)
 
     NextStates = []
-    
+
     for m in range(len(storeActions)):
         # check if all values are same in the dictionary
         if all(x == list(storeActions[m].values())[0] for x in storeActions[m].values()):
