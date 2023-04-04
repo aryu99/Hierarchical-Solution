@@ -1,12 +1,15 @@
 import time
 import copy
 
+from low_level_controller.rl_controller import RLController
 
 import utils_rl
 import glue_rl
 import node_rl
 from config_rl import MAX_ITERATIONS_PER_ACTION, Actions
 from MCTS_rl import MCTS
+
+
 
 # Modifiable variables for MCTS
 MaxIteration = MAX_ITERATIONS_PER_ACTION #maximum number of iterations for selecting one action
@@ -16,12 +19,15 @@ MaxIteration = MAX_ITERATIONS_PER_ACTION #maximum number of iterations for selec
 def train_rl_subcontrollers():
     '''
     Train all the RL Subcontrollers
+
+    Note: For now idx of subcontroller corresponds to the action value that it represents.
     '''
+
     for action in Actions:
-        if action.value == 3:
-            continue
-        else:
-            
+        print(action)
+        subcontroller = RLController(action.value, action.value, training_mode=True, max_training_steps=1e6, verbose=True)
+        subcontroller.learn(total_timesteps=5e4)
+
     print("Training all the RL Subcontrollers")
     pass
 
@@ -69,8 +75,8 @@ if __name__ == "__main__":
 
 # ----------------------------------------------------------------
     # Loop to run the MCTS solution
-
-    run_MCTS()
+    train_rl_subcontrollers()
+    # run_MCTS()
     # env.render()
     # time.sleep(5)
 

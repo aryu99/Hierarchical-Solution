@@ -17,7 +17,7 @@ class RLController:
     for differen sub-tasks
     ''' 
     
-    def __init__(self, controller_ind:int, controller_type:Actions.value, training_mode=False, max_training_steps=1e6, load_dir=None, verbose=False):
+    def __init__(self, controller_ind:int, controller_type:int, training_mode=False, max_training_steps=1e6, load_dir=None, verbose=False):
         '''
         Constructor for the RLController class
         
@@ -53,8 +53,6 @@ class RLController:
             self._init_learning_alg()
         else:
             self.load(load_dir)
-        
-        self.init_model()
 
 
     def learn(self, total_timesteps=5e4):
@@ -190,10 +188,7 @@ class RLController:
         self.model = PPO.load(model_file, env=self.training_env)
 
     def _set_training_env(self, env_settings):
-        self.training_env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=1, layout=default_layout)
-        self.training_env.agent_start_states = self.init_states
-        self.training_env.goal_states = self.final_states
-
+        self.training_env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=1, layout=default_layout, train_subcontroller=[(self.controller_type)], training_mode=True, max_steps=self.max_training_steps)
 
     def _init_learning_alg(self, verbose=False):
         self.model = PPO("MlpPolicy", 
