@@ -40,7 +40,7 @@ default_layout = """
 
 
 def make_env():
-    env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=n_agents, layout=default_layout)
+    env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=n_agents, layout=default_layout, training_mode = False)
     return env
 
 def get_goal_coords(init_env, verbose=False):

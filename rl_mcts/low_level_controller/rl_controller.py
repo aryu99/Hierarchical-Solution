@@ -64,7 +64,7 @@ class RLController:
         total_timesteps : int
             Total number of timesteps to train the sub-system for.
         """
-        self.model.learn(total_timesteps=total_timesteps)
+        self.model.learn(total_timesteps=total_timesteps, progress_bar=True)
         self.data['total_training_steps'] = self.data['total_training_steps'] + total_timesteps
 
     def predict(self, obs, deterministic=True):
@@ -201,7 +201,8 @@ class RLController:
                         n_epochs=10,
                         ent_coef=0.0,
                         learning_rate=2.5e-4,
-                        clip_range=0.2)
+                        clip_range=0.2,
+                        tensorboard_log="tb_log/")
     
     def demonstrate_capabilities(self, n_episodes=5, n_steps=100, render=True):
         """
