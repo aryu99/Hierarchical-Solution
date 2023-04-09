@@ -14,7 +14,19 @@ from MCTS_rl import MCTS
 # Modifiable variables for MCTS
 MaxIteration = MAX_ITERATIONS_PER_ACTION #maximum number of iterations for selecting one action
 
+def load_and_demonstrate(controller_name):
+    '''
+    Load a saved RLController and demonstrate its capabilities
 
+    Parameters
+    ----------
+    controller_name : str
+        The name of the controller to be loaded
+    '''
+    path = "saved_controllers"
+    subcontroller = RLController(0, 0, training_mode=True, max_training_steps=100, verbose=True)
+    subcontroller.load(path)
+    subcontroller.demonstrate_capabilities(n_episodes=3)
 
 def train_rl_subcontrollers():
     '''
@@ -22,11 +34,20 @@ def train_rl_subcontrollers():
 
     Note: For now idx of subcontroller corresponds to the action value that it represents.
     '''
-
+    count = 0
+    MAX_TRAINING_STEPS = 1000 #30
+    TIMESTEPS =  5e7 #3e5 #5e4
     for action in Actions:
+        count += 1
         print(action)
-        subcontroller = RLController(action.value, action.value, training_mode=True, max_training_steps=1e6, verbose=True)
-        subcontroller.learn(total_timesteps=5e4)
+        subcontroller = RLController(action.value, action.value, training_mode=True, max_training_steps=MAX_TRAINING_STEPS, verbose=True)
+        subcontroller.learn(total_timesteps=TIMESTEPS)
+        if count == 1:
+            break
+    
+    subcontroller.demonstrate_capabilities(n_episodes=3)
+    subcontroller.save("saved_controllers", "LOAD_SHELF_n_steps_ppo_new_reward")
+
 
     print("Training all the RL Subcontrollers")
     pass
@@ -76,6 +97,7 @@ if __name__ == "__main__":
 # ----------------------------------------------------------------
     # Loop to run the MCTS solution
     train_rl_subcontrollers()
+    # load_and_demonstrate("saved_controllers")
     # run_MCTS()
     # env.render()
     # time.sleep(5)

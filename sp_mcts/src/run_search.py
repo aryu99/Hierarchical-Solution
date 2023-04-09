@@ -7,7 +7,7 @@ import glue
 import utils
 
 # Modifiable variables for MCTS
-MaxIteration = 10 #maximum number of iterations for selecting one action
+MaxIteration = 50 #maximum number of iterations for selecting one action
 numActions = 50 # number of actions to be selected
 
 def load_tree(filename):

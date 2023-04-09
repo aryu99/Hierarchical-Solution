@@ -1,6 +1,6 @@
 from config_rl import Actions, sensor_range, n_requests, default_layout
 
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, SAC, A2C
 from datetime import datetime
 import pickle
 import gym
@@ -130,7 +130,7 @@ class RLController:
             'avg_num_steps' : avg_num_steps,
         }
     
-    def save(self, save_dir):
+    def save(self, save_dir, model_name):
         """
         Save the controller object.
 
@@ -142,22 +142,23 @@ class RLController:
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        model_file = os.path.join(save_dir, 'model')
+        model_file = os.path.join(save_dir, 'model' + model_name)
+
         self.model.save(model_file)
-        controller_file = os.path.join(save_dir, 'controller_data.p')
+        # controller_file = os.path.join(save_dir, 'controller_data.p')
 
-        controller_data = {
-            'controller_ind' : self.controller_ind,
-            'init_states' : self.init_states,
-            'final_states' : self.final_states,
-            'env_settings' : self.env_settings,
-            'verbose' : self.verbose,
-            'max_training_steps' : self.max_training_steps,
-            'data' : self.data,
-        }
+        # controller_data = {
+        #     'controller_ind' : self.controller_ind,
+        #     'init_states' : self.init_states,
+        #     'final_states' : self.final_states,
+        #     'env_settings' : self.env_settings,
+        #     'verbose' : self.verbose,
+        #     'max_training_steps' : self.max_training_steps,
+        #     'data' : self.data,
+        # }
 
-        with open(controller_file, 'wb') as pickleFile:
-            pickle.dump(controller_data, pickleFile)
+        # with open(controller_file, 'wb') as pickleFile:
+        #     pickle.dump(controller_data, pickleFile)
 
     
     def load(self, save_dir):
@@ -170,31 +171,31 @@ class RLController:
             Absolute path to the directory that will be used to save this controller.
         """
 
-        controller_file = os.path.join(save_dir, 'controller_data.p')
-        with open(controller_file, 'rb') as pickleFile:
-            controller_data = pickle.load(pickleFile)
+        # controller_file = os.path.join(save_dir, 'controller_data.p')
+        # with open(controller_file, 'rb') as pickleFile:
+        #     controller_data = pickle.load(pickleFile)
 
-        self.controller_ind = controller_data['controller_ind']
-        self.init_states = controller_data['init_states']
-        self.final_states = controller_data['final_states']
-        self.env_settings = controller_data['env_settings']
-        self.max_training_steps = controller_data['max_training_steps']
-        self.verbose = controller_data['verbose']
-        self.data = controller_data['data']
+        # self.controller_ind = controller_data['controller_ind']
+        # self.init_states = controller_data['init_states']
+        # self.final_states = controller_data['final_states']
+        # self.env_settings = controller_data['env_settings']
+        # self.max_training_steps = controller_data['max_training_steps']
+        # self.verbose = controller_data['verbose']
+        # self.data = controller_data['data']
 
-        self._set_training_env(self.env_settings)
+        self._set_training_env(self.training_mode)
 
         model_file = os.path.join(save_dir, 'model')
         self.model = PPO.load(model_file, env=self.training_env)
 
-    def _set_training_env(self, env_settings):
-        self.training_env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=n_requests, n_agents=1, layout=default_layout, train_subcontroller=[(self.controller_type)], training_mode=True, max_steps=self.max_training_steps)
+    def _set_training_env(self, training_mode):
+        self.training_env = gym.make("rware-tiny-2ag-v1", sensor_range=sensor_range, request_queue_size=1, n_agents=1, layout=default_layout, train_subcontroller=[(self.controller_type)], training_mode=True, max_steps=self.max_training_steps)
 
     def _init_learning_alg(self, verbose=False):
         self.model = PPO("MlpPolicy", 
                         self.training_env, 
                         verbose=verbose,
-                        n_steps=512,
+                        n_steps=128,
                         batch_size=64,
                         gae_lambda=0.95,
                         gamma=0.99,
@@ -203,8 +204,13 @@ class RLController:
                         learning_rate=2.5e-4,
                         clip_range=0.2,
                         tensorboard_log="tb_log/")
+        
+        # self.model = A2C("MlpPolicy", 
+        #                 self.training_env, 
+        #                 verbose=verbose,
+        #                 tensorboard_log="tb_log/")
     
-    def demonstrate_capabilities(self, n_episodes=5, n_steps=100, render=True):
+    def demonstrate_capabilities(self, n_episodes=5, n_steps=20, render=True):
         """
         Demonstrate the capabilities of the learned controller in the environment used to train it.
 
@@ -219,12 +225,20 @@ class RLController:
         """
         for episode_ind in range(n_episodes):
             obs = self.training_env.reset()
+            print("\n Observation: {}".format(obs))
             for step in range(n_steps):
+                print("\n Step: ", step)
                 action, _states = self.model.predict(obs, deterministic=True)
+                print("\n Action: ", action)
                 obs, reward, done, info = self.training_env.step(action)
+                print("\n Observation in step: ", obs)
+                print("\n Reward: ", reward)
+                print("\n Done: ", done)
                 if render:
-                    self.training_env.render(highlight=False)
-                if done:
+                    # print("Step: ", step)
+                    self.training_env.render()
+                if done==True:
+                    print("done")
                     break
 
         obs = self.training_env.reset()

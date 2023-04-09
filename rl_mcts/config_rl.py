@@ -18,13 +18,13 @@ class Actions(Enum):
     Enum for the actions
     '''
     LOAD_SHELF = 0
-    UNLOAD_SHELF = 1
-    GOTO_GOAL = 2
-    DO_NOTHING = 3
+    # UNLOAD_SHELF = 1
+    # GOTO_GOAL = 2
+    # DO_NOTHING = 3
     
 
 n_agents = 2
-n_requests = 2
+n_requests = 2 #1 for training, 2 for prediction/testing
 sensor_range = 9
 default_layout = """
 .........
