@@ -36,7 +36,7 @@ def train_rl_subcontrollers():
     '''
     count = 0
     MAX_TRAINING_STEPS = 1000 #30
-    TIMESTEPS =  5e7 #3e5 #5e4
+    TIMESTEPS =  3e6 #3e5 #5e4
     for action in Actions:
         count += 1
         print(action)

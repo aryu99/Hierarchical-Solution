@@ -17,8 +17,8 @@ class Actions(Enum):
     '''
     Enum for the actions
     '''
-    LOAD_SHELF = 0
-    # UNLOAD_SHELF = 1
+    # LOAD_SHELF = 0
+    UNLOAD_SHELF = 1
     # GOTO_GOAL = 2
     # DO_NOTHING = 3
     
