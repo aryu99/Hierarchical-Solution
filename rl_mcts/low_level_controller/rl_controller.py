@@ -142,7 +142,7 @@ class RLController:
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        model_file = os.path.join(save_dir, 'model' + model_name)
+        model_file = os.path.join(save_dir, model_name)
 
         self.model.save(model_file)
         # controller_file = os.path.join(save_dir, 'controller_data.p')
@@ -161,7 +161,7 @@ class RLController:
         #     pickle.dump(controller_data, pickleFile)
 
     
-    def load(self, save_dir):
+    def load(self, save_dir, model_name):
         """
         Load a controller object
 
@@ -185,7 +185,7 @@ class RLController:
 
         self._set_training_env(self.training_mode)
 
-        model_file = os.path.join(save_dir, 'model')
+        model_file = os.path.join(save_dir, model_name)
         self.model = PPO.load(model_file, env=self.training_env)
 
     def _set_training_env(self, training_mode):

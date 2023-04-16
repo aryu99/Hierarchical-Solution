@@ -1,4 +1,4 @@
-from glue_rl import check_terminal_state
+from abs_sim import AbstractSimulator
 from config_rl import MCTS_ROLLOUT_STEPS
 from utils_rl import calc_rollout_reward
 
@@ -71,8 +71,8 @@ class Node:
         True if the node is terminal, False otherwise (bool)
         '''
         if input_as_state:
-            return check_terminal_state(node)
-        return check_terminal_state(node.state)
+            return AbstractSimulator.check_terminal_state(node)
+        return AbstractSimulator.check_terminal_state(node.state)
 
     @staticmethod
     def IsLevelTerminal(level:int):

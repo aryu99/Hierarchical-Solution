@@ -50,9 +50,9 @@ class AbstractSimulator:
 
         for i in range(len(self.shelfs)):
             if (self.shelfs[i].x, self.shelfs[i].y) in requested_shelf_coords:
-                state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
+                state.append(Shelf(self.shelfs[i].id, self.shelfs[i].x, self.shelfs[i].y, 1, 0))
             else:
-                state.append(Shelf(i+1, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
+                state.append(Shelf(self.shelfs[i].id, self.shelfs[i].x, self.shelfs[i].y, 0, 0))
 
         if verbose:
             print("Getting the current state")

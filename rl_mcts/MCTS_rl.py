@@ -13,7 +13,7 @@ import pickle as pkl
 # from numba import jit
 
 import node_rl as nd
-import glue_rl
+# import glue_rl
 from config_rl import MCTS_REWARD_PARAMETER, RewardFormat, MCTS_SIM_PARALLEL_ROLLOUT_NUM
 
 #------------------------------------------------------------------------#
@@ -31,9 +31,10 @@ class MCTS:
     # Verbose - True: Print details of search during execution.
     # 			False: Otherwise
     #-----------------------------------------------------------------------#
-    def __init__(self, Node, Verbose=False):
+    def __init__(self, Node, glue, Verbose=False):
         self.root = Node
         self.verbose = Verbose
+        self.glue_rl = glue
 
     #-----------------------------------------------------------------------#
     # Description: Performs selection phase of the MCTS.
@@ -194,7 +195,7 @@ class MCTS:
         Children : list 
             List of children Nodes.
         '''
-        NextStates = glue_rl.EvalNextStates(Node.state)
+        NextStates = self.glue_rl.EvalNextStates(Node.state)
         Children = []
         for State in NextStates:            
             ChildNode = nd.Node(State[0])
@@ -265,7 +266,7 @@ class MCTS:
             if MCTS_REWARD_PARAMETER.value == 0:
                 while (nd.Node.IsLevelTerminal(relativeLevel)):
                     relativeLevel += 1.0
-                    CurrentState = glue_rl.GetNextState(CurrentState)
+                    CurrentState = self.glue_rl.GetNextState(CurrentState)
                     if nd.Node.IsNodeTerminal(CurrentState, input_as_state=True):
                         Result += nd.Node.GetResult(CurrentState, 0)
                         break
@@ -273,7 +274,7 @@ class MCTS:
             elif MCTS_REWARD_PARAMETER.value == 1:
                 while nd.Node.IsNodeTerminal(CurrentState, input_as_state=True) == False:
                     relativeLevel += 1
-                    CurrentState = glue_rl.GetNextState(CurrentState)
+                    CurrentState = self.glue_rl.GetNextState(CurrentState)
                 Result += 1/relativeLevel + nd.Node.GetResult(CurrentState, 1)
 
             simResult += Result

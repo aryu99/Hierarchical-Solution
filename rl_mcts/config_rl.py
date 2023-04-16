@@ -17,10 +17,10 @@ class Actions(Enum):
     '''
     Enum for the actions
     '''
-    # LOAD_SHELF = 0
+    LOAD_SHELF = 0
     UNLOAD_SHELF = 1
-    # GOTO_GOAL = 2
-    # DO_NOTHING = 3
+    GOTO_GOAL = 2
+    DO_NOTHING = 3
     
 
 n_agents = 2

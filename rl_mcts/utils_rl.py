@@ -203,7 +203,25 @@ def print_state(state):
         str_store.append(str(entity))
     return str_store
 
-        
+
+def format_actions(actions_list, shelfs): 
+
+    formatted_actions_list = []
+    for action_dict in actions_list:
+        action_pair = []
+        for action in list(action_dict.values()):
+            action_desc = []
+            action_desc.append(action[0].value)
+            if len(action) == 2:
+                for shelf in shelfs:
+                    if shelf.id == action[1]:
+                        action_desc.append((shelf.x, shelf.y))
+            action_pair.append(action_desc)
+        formatted_actions_list.append(action_pair)
+
+    return formatted_actions_list
+                
+            
 
 
 
